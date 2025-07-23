@@ -1,0 +1,71 @@
+
+spring:
+  application:
+    name: Ticketing Server
+  main:
+    web-application-type: servlet
+
+  profiles:
+    active: local
+
+  docker:
+    compose:
+      enabled: false
+
+  datasource:
+    username: root
+    password: Qweasd123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimum-idle: 400
+      maximum-pool-size: 2000
+
+  rabbitmq:
+    host: 172.31.20.96
+    port: 5672
+    username: guest
+    password: guest
+
+  data:
+    redis:
+      timeout: 5000
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 0
+
+logging:
+  file:
+    name: ./logs/ticketing-platform.log
+  level:
+    root: INFO
+    org.java.ticketingplatform.service: DEBUG
+    org.java.ticketingplatform.service.SeatOccupiedRedisFacade: TRACE
+
+---
+# ==============================
+# prod
+# ==============================
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    host: sqldatabase.ci2ohbo6xdho.us-west-2.rds.amazonaws.com
+    url: jdbc:mysql://${spring.datasource.host}:3306/ticket_platform?serverTimezone=UTC
+
+  data:
+    redis:
+      host: 172.31.44.126
+      port: 6379
+      password: Qweasd123
+
+aws:
+  dynamodb:
+    region: us-west-2
+    end-point: http://172.31.39.232:8000
+    access-key: id
+    access-pass: key

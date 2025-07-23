@@ -1,0 +1,45 @@
+2025-04-24T00:50:26.004-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] o.j.t.TicketingPlatformApplication       : Starting TicketingPlatformApplication using Java 17.0.14 with PID 6585 (/Users/james/Desktop/0_NEU_CSA/CS6650_DIstributed_system/CS6650_scalable_distributed/FinalProject/TicketingPlatform/target/classes started by james in /Users/james/Desktop/0_NEU_CSA/CS6650_DIstributed_system/CS6650_scalable_distributed/FinalProject/TicketingPlatform)
+2025-04-24T00:50:26.006-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] o.j.t.TicketingPlatformApplication       : The following 1 profile is active: "local"
+2025-04-24T00:50:26.024-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-04-24T00:50:26.024-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-04-24T00:50:26.340-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-04-24T00:50:26.341-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JDBC repositories in DEFAULT mode.
+2025-04-24T00:50:26.349-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 6 ms. Found 0 JDBC repository interfaces.
+2025-04-24T00:50:26.357-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-04-24T00:50:26.357-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-04-24T00:50:26.361-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 1 ms. Found 0 JPA repository interfaces.
+2025-04-24T00:50:26.372-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-04-24T00:50:26.373-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2025-04-24T00:50:26.379-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 1 ms. Found 0 Redis repository interfaces.
+2025-04-24T00:50:26.644-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-04-24T00:50:26.650-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-04-24T00:50:26.650-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.39]
+2025-04-24T00:50:26.666-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-04-24T00:50:26.666-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 637 ms
+2025-04-24T00:50:26.720-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-04-24T00:50:26.842-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@19f58da1
+2025-04-24T00:50:26.842-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-04-24T00:50:26.861-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-04-24T00:50:26.887-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.11.Final
+2025-04-24T00:50:26.901-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-04-24T00:50:27.031-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-04-24T00:50:27.084-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 8.0.37
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-04-24T00:50:27.209-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-04-24T00:50:27.211-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-04-24T00:50:27.963-07:00  WARN 6585 --- [Ticketing Server] [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-04-24T00:50:28.273-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] .w.s.a.s.AnnotationActionEndpointMapping : Supporting [WS-Addressing August 2004, WS-Addressing 1.0]
+2025-04-24T00:50:28.285-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-04-24T00:50:28.313-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-04-24T00:50:28.321-07:00  INFO 6585 --- [Ticketing Server] [restartedMain] o.j.t.TicketingPlatformApplication       : Started TicketingPlatformApplication in 2.49 seconds (process running for 2.751)
+2025-04-24T00:52:04.717-07:00  INFO 6585 --- [Ticketing Server] [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2025-04-24T00:52:06.732-07:00  INFO 6585 --- [Ticketing Server] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2025-04-24T00:52:06.769-07:00  INFO 6585 --- [Ticketing Server] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-04-24T00:52:06.774-07:00  INFO 6585 --- [Ticketing Server] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2025-04-24T00:52:08.829-07:00  INFO 6585 --- [Ticketing Server] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
