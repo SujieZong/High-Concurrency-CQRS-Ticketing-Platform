@@ -1,0 +1,91 @@
+# docker-compose.yml 放在项目根目录，与 TicketingPlatform/、RabbitCombinedConsumer/ 平级
+services:
+  # —— 下游依赖 —— 
+  redis:
+    image: redis:7-alpine
+    container_name: dev-redis
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: dev-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  dynamodb:
+    image: amazon/dynamodb-local
+    container_name: dev-dynamodb
+    ports:
+      - "8000:8000"
+
+  # —— API 服务 —— 
+  ticketing-platform:
+    build:
+      context: ./TicketingPlatform
+      dockerfile: Docker
+    image: ticketing-platform:latest
+    container_name: ticketing-platform
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+      - rabbitmq
+      - dynamodb
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+
+      # Redis
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+
+      # RabbitMQ
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+
+      # MySQL（宿主机）
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/ticket_platform?serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Qweasd123
+
+      # DynamoDB Local 覆盖（注意绑定到 Compose 服务名 dynamodb:8000）
+      AWS_DYNAMODB_ENDPOINT: http://dynamodb:8000
+      AWS_DYNAMODB_REGION: us-west-2
+      AWS_DYNAMODB_ACCESS_KEY: id
+      AWS_DYNAMODB_ACCESS_PASS: key
+
+  # —— Consumer 服务 —— 
+  rabbit-consumer:
+    build:
+      context: ./RabbitCombinedConsumer
+      dockerfile: Docker
+    image: rabbit-consumer:latest
+    container_name: rabbit-consumer
+    depends_on:
+      - rabbitmq
+      - dynamodb
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+
+      # RabbitMQ
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+
+      # MySQL（宿主机）
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/ticket_platform?serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Qweasd123
+
+      # DynamoDB Local
+      AWS_DYNAMODB_ENDPOINT: http://dynamodb:8000
+      AWS_DYNAMODB_REGION: us-west-2
+      AWS_DYNAMODB_ACCESS_KEY: id
+      AWS_DYNAMODB_ACCESS_PASS: key
