@@ -1,7 +1,8 @@
 package org.java.ticketingplatform.service.query;
 
 import lombok.extern.slf4j.Slf4j;
-import org.java.ticketingplatform.repository.MySqlTicketDAOInterface;
+import org.springframework.transaction.annotation.Transactional;
+import org.java.ticketingplatform.repository.mysql.TicketInfoRepository;
 import org.java.ticketingplatform.service.QueryServiceInterface;
 import org.springframework.stereotype.Service;
 
@@ -10,25 +11,26 @@ import java.math.BigDecimal;
 @Slf4j
 @Service
 public class QueryService implements QueryServiceInterface {
-	private final MySqlTicketDAOInterface sqlDao;
-	public QueryService(MySqlTicketDAOInterface sqlDao) {
-		this.sqlDao = sqlDao;
+	private final TicketInfoRepository ticketInfoRepository;
+	public QueryService(TicketInfoRepository ticketInfoRepository) {
+		this.ticketInfoRepository = ticketInfoRepository;
 	}
 
 	@Override
 	public int countTicketSoldByEvent(String eventId) {
 		log.debug("[QueryService][countTicketSoldByEvent] start for eventId={}", eventId);
-		int count = sqlDao.countTicketSold(eventId);
+		int count = ticketInfoRepository.countByEventId(eventId);
 		log.debug("[QueryService][countTicketSoldByEvent] result={} for eventId={}", count, eventId);
 		return count;
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public BigDecimal sumRevenueByVenueAndEvent(String venueId, String eventId) {
 		log.debug("[QueryService][sumRevenueByVenueAndEvent] start venueId={},eventId={}", venueId, eventId);
-		BigDecimal revenue = sqlDao.sumRevenueByVenueEvent(venueId, eventId);
+		BigDecimal revenue = ticketInfoRepository.sumRevenueByVenueAndEvent(venueId, eventId);
 		log.debug("[QueryService][sumRevenueByVenueAndEvent] result={} for venueId={},eventId={}",
 				revenue, venueId, eventId);
-		return revenue;
+		return revenue == null ? BigDecimal.ZERO : revenue;
 	}
 }
