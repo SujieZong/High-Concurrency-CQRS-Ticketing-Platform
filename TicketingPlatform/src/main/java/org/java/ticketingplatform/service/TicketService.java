@@ -9,6 +9,7 @@ import org.java.ticketingplatform.mapper.TicketMapper;
 import org.java.ticketingplatform.model.TicketCreation;
 import org.java.ticketingplatform.model.TicketInfo;
 import org.java.ticketingplatform.repository.DynamoTicketDAOInterface;
+import org.java.ticketingplatform.repository.mysql.TicketInfoRepository;
 import org.java.ticketingplatform.service.rabbitmq.RabbitProducer;
 import org.springframework.stereotype.Service;
 
@@ -22,15 +23,18 @@ public class TicketService implements TicketServiceInterface {
 	private final DynamoTicketDAOInterface ticketDAO;
 	private final SeatOccupiedRedisFacade seatOccupiedRedisFacade;
 	private final RabbitProducer rabbitProducer;
+	private final TicketInfoRepository ticketInfoRepository;
 
 	public TicketService(TicketMapper ticketMapper,
 	                     DynamoTicketDAOInterface ticketDAO,
 	                     SeatOccupiedRedisFacade seatOccupiedRedisFacade,
-	                     RabbitProducer rabbitProducer) {
+	                     RabbitProducer rabbitProducer,
+	                     TicketInfoRepository ticketInfoRepository) {
 		this.ticketMapper = ticketMapper;
 		this.ticketDAO = ticketDAO;
 		this.seatOccupiedRedisFacade = seatOccupiedRedisFacade;
 		this.rabbitProducer = rabbitProducer;
+		this.ticketInfoRepository = ticketInfoRepository;
 	}
 
 
