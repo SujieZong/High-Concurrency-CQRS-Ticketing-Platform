@@ -1,4 +1,4 @@
-package org.java.ticketingplatform.model;
+package org.java.ticketingplatform.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
