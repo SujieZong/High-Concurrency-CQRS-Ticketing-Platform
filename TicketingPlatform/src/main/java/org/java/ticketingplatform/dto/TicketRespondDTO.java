@@ -2,11 +2,14 @@ package org.java.ticketingplatform.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.Instant;
 
 // Following the model TicketCreationDTO
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 public class TicketRespondDTO {
 	private String ticketId;

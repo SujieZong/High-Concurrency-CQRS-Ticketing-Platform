@@ -4,32 +4,31 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.java.ticketingplatform.dto.TicketInfoDTO;
 import org.java.ticketingplatform.exception.TicketNotFoundException;
+import org.java.ticketingplatform.mapper.TicketMapper;
 import org.java.ticketingplatform.model.TicketInfo;
-import org.springframework.transaction.annotation.Transactional;
 import org.java.ticketingplatform.repository.mysql.TicketInfoRepository;
 import org.java.ticketingplatform.service.QueryServiceInterface;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class QueryService implements QueryServiceInterface {
 	private final TicketInfoRepository ticketInfoRepository;
-
+	private final TicketMapper tickerMapper;
 
 	@Override
 	@Transactional(readOnly = true)
-	public TicketInfo getTicket(String ticketId) {
+	public TicketInfoDTO getTicket(String ticketId) {
 		log.debug("[TicketService][getTicket] start query ticketId={}", ticketId);
 
-		return ticketInfoRepository.findById(ticketId)
-				.orElseThrow(() -> {
-					log.warn("[QueryService][getTicket] NOT FOUND! ticketId={}", ticketId);
-					return new TicketNotFoundException("Ticket not found with id: " + ticketId);
-				});
+		TicketInfo ticketEntity = ticketInfoRepository.findById(ticketId)
+				.orElseThrow(() -> new TicketNotFoundException("Ticket not found with id: " + ticketId));
+
+		return tickerMapper.toInfoDto(ticketEntity);
 	}
 
 	@Override
