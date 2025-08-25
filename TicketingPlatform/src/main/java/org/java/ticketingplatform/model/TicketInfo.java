@@ -1,18 +1,14 @@
 package org.java.ticketingplatform.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.Instant;
 
 @Entity
 @Table(name = "ticket")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class TicketInfo {
@@ -37,4 +33,9 @@ public class TicketInfo {
 	// have restrictions on changing this date
 	@Column(name = "created_on", nullable = false, updatable = false)
 	private Instant createdOn;
+
+	@Column(name = "status", nullable = false)
+	@Enumerated(EnumType.STRING)
+	private TicketStatus status;
+
 }

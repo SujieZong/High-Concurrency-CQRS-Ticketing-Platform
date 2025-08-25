@@ -23,7 +23,7 @@ public class DynamoTicketDao implements DynamoTicketDAOInterface {
 		this.dynamoDbClient = dynamoDbClient;
 	}
 
-//	public String createTicket(TicketCreation ticket) {
+//	public String createTicket(TicketCreationDTO ticket) {
 //		log.debug("[DynamoTicketDao] createTicket called with: {}", ticket);
 //
 //		Map<String, AttributeValue> item = new HashMap<>();

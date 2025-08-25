@@ -2,7 +2,7 @@ package org.java.ticketingplatform.controller;
 
 import org.java.ticketingplatform.dto.TicketRespondDTO;
 import org.java.ticketingplatform.exception.SeatOccupiedException;
-import org.java.ticketingplatform.model.ErrorMessage;
+import org.java.ticketingplatform.dto.ErrorMessage;
 import org.java.ticketingplatform.model.TicketInfo;
 import org.java.ticketingplatform.service.TicketServiceInterface;
 import org.springframework.http.HttpStatus;

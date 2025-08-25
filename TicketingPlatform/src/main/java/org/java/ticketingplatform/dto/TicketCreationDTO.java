@@ -1,4 +1,4 @@
-package org.java.ticketingplatform.model;
+package org.java.ticketingplatform.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,13 +7,12 @@ import java.time.Instant;
 
 @Data
 @AllArgsConstructor
-public class TicketCreation {
+public class TicketCreationDTO {
 	private String id;
 	private String venueId;
 	private String eventId;
 	private int zoneId;
 	private String column;
 	private String row;
-	private String status; //"CREATED", "PAID", "CANCELLED"
 	private Instant createdOn;
 }

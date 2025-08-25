@@ -5,7 +5,7 @@ import lombok.Data;
 
 import java.time.Instant;
 
-// Following the model TicketCreation
+// Following the model TicketCreationDTO
 @Data
 @AllArgsConstructor
 public class TicketRespondDTO {
