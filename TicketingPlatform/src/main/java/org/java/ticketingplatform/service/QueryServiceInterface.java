@@ -6,7 +6,7 @@ import org.java.ticketingplatform.model.TicketInfo;
 import java.math.BigDecimal;
 
 public interface QueryServiceInterface {
-	TicketInfo getTicket(String ticketId);
+	TicketInfoDTO getTicket(String ticketId);
 
 	int countTicketSoldByEvent(String eventId);
 

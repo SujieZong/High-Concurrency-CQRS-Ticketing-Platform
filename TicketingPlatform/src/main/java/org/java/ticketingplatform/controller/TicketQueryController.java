@@ -1,5 +1,9 @@
 package org.java.ticketingplatform.controller;
 
+import org.java.ticketingplatform.dto.ErrorMessage;
+import org.java.ticketingplatform.dto.TicketInfoDTO;
+import org.java.ticketingplatform.exception.TicketNotFoundException;
+import org.java.ticketingplatform.model.TicketInfo;
 import org.java.ticketingplatform.service.QueryServiceInterface;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +23,19 @@ public class TicketQueryController {
 	public TicketQueryController(QueryServiceInterface queryService) {
 		this.queryService = queryService;
 	}
+
+
+	@GetMapping("/{ticketId}")
+	public ResponseEntity<?> getTicket(@PathVariable String ticketId) {
+		try {
+			TicketInfoDTO ticketInfoDTO = queryService.getTicket(ticketId);
+			return ResponseEntity.ok(ticketInfoDTO);
+		} catch (TicketNotFoundException e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body(new ErrorMessage("TicketID not found: " + ticketId));
+		}
+	}
+
 
 	@GetMapping("/count/{eventId}")
 	public ResponseEntity<String> countSoldByEvent(@PathVariable String eventId) {

@@ -15,6 +15,11 @@ public class GeneralExceptionHandler {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
 	}
 
+	public ResponseEntity<String> handleTicketException(CreateTicketException ex){
+		String errorMessage = ex.getMessage();
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+	}
+
 
 	@ExceptionHandler(MissingServletRequestParameterException.class)
 	public ResponseEntity<String> handleMissingParameter(MissingServletRequestParameterException ex) {
