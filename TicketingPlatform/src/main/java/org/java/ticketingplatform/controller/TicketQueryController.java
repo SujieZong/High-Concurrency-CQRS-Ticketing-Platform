@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.math.BigDecimal;
 
 @RestController
-@RequestMapping("/get")
+@RequestMapping("/api/v1/tickets")
 public class TicketQueryController {
 
 	private final QueryServiceInterface queryService;

@@ -15,7 +15,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/ticket")
+@RequestMapping("/api/v1/tickets")
 public class TicketPurchaseController {
 
 	private final TicketServiceInterface ticketService;
@@ -24,7 +24,7 @@ public class TicketPurchaseController {
 		this.ticketService = ticketService;
 	}
 
-	@PostMapping("/purchase")
+	@PostMapping("/tickets")
 	public ResponseEntity<TicketRespondDTO> purchaseTicket(@RequestBody TicketPurchaseRequestDTO requestDTO) {
 
 		String ticketId = UUID.randomUUID().toString();
