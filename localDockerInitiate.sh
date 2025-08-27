@@ -5,6 +5,12 @@ echo "Stopping old dev containers…"
 docker rm -f dev-redis dev-rabbitmq dev-dynamodb \
            ticketing-platform rabbit-consumer 2>/dev/null || true
 
+# 在 redoTicketImage.sh 中
+if docker image inspect "${IMAGE_NAME}:${TAG}" > /dev/null 2>&1; then
+  echo "Delete old ${IMAGE_NAME}:${TAG}"
+  docker rmi -f "${IMAGE_NAME}:${TAG}"
+fi
+
 echo "Starting all services via Docker Compose…"
 docker compose up --build -d
 
