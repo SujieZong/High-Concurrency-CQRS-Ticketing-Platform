@@ -2,6 +2,7 @@ package org.java.ticketingplatform.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.java.ticketingplatform.dto.MqDTO;
 import org.java.ticketingplatform.dto.TicketCreationDTO;
 import org.java.ticketingplatform.dto.TicketRespondDTO;
 import org.java.ticketingplatform.exception.CreateTicketException;
@@ -10,6 +11,7 @@ import org.java.ticketingplatform.mapper.TicketMapper;
 import org.java.ticketingplatform.model.TicketInfo;
 import org.java.ticketingplatform.model.TicketStatus;
 import org.java.ticketingplatform.repository.mysql.TicketInfoRepository;
+import org.java.ticketingplatform.service.rabbitmq.RabbitProducer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +25,7 @@ public class TicketService implements TicketServiceInterface {
 
 	private final TicketMapper ticketMapper;
 	private final SeatOccupiedRedisFacade seatOccupiedRedisFacade;
-	//	private final RabbitProducer rabbitProducer;
+	private final RabbitProducer rabbitProducer;
 	private final TicketInfoRepository ticketInfoRepository;
 
 	// transfer input data into a Response DTO object and save to Database through DAO and Mapper
@@ -50,6 +52,18 @@ public class TicketService implements TicketServiceInterface {
 		try {
 			TicketInfo saved = ticketInfoRepository.save(ticket);
 			log.info("[TicketService][purchaseTicket] created ticketId={}", saved.getTicketId());
+
+			TicketStatus currentStatus = saved.getStatus();
+
+			MqDTO mqMessage = new MqDTO(
+					saved.getTicketId(), saved.getVenueId(),
+					saved.getEventId(), saved.getZoneId(),
+					saved.getRow(), saved.getColumn(),
+					currentStatus.name(), saved.getCreatedOn());
+			rabbitProducer.sendTicketCreated(mqMessage);
+			log.info("[TicketService][purchaseTicket] Sent ticket.created event for ticketId={}", saved.getTicketId());
+
+
 			return ticketMapper.toRespondDto(saved);      // 响应基于“保存后的真数据”
 		} catch (Exception ex) {
 			safeReleaseSeat(dto, ticket.getTicketId(), ex); // 失败补偿

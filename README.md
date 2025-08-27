@@ -43,3 +43,9 @@ users, while JMeter tests confirm that duplicate requests are rejected without t
 throughput. Redis sharding, a read-only cache, and a transparent routing layer will be some of
 the future improvements. Those improvements will provide a higher concurrency level, distribute
 the access stress of a single server, and provide a better service to the consumers.
+
+
+`./mvnw clean package`
+`./mvnw clean package`
+`./localDockerInitiate.sh`
+`docker-compose down`

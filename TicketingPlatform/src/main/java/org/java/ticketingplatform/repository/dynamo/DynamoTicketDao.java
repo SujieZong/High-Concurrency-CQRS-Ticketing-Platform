@@ -2,6 +2,7 @@ package org.java.ticketingplatform.repository.dynamo;
 
 import lombok.extern.slf4j.Slf4j;
 import org.java.ticketingplatform.model.TicketInfo;
+import org.java.ticketingplatform.model.TicketStatus;
 import org.java.ticketingplatform.repository.DynamoTicketDAOInterface;
 import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -22,40 +23,6 @@ public class DynamoTicketDao implements DynamoTicketDAOInterface {
 	public DynamoTicketDao(DynamoDbClient dynamoDbClient) {
 		this.dynamoDbClient = dynamoDbClient;
 	}
-
-//	public String createTicket(TicketCreationDTO ticket) {
-//		log.debug("[DynamoTicketDao] createTicket called with: {}", ticket);
-//
-//		Map<String, AttributeValue> item = new HashMap<>();
-//		item.put("ticketId", AttributeValue.fromS(ticket.getId()));
-//		item.put("venueId", AttributeValue.fromS(ticket.getVenueId()));
-//		item.put("eventId", AttributeValue.fromS(ticket.getEventId()));
-//		item.put("zone", AttributeValue.fromN(String.valueOf(ticket.getZoneId())));
-//		item.put("row", AttributeValue.fromS(ticket.getRow()));
-//		item.put("column", AttributeValue.fromS(ticket.getColumn()));
-//		item.put("status", AttributeValue.fromS(ticket.getStatus()));
-//
-//		String timeIso = ticket.getCreatedOn().toString(); // process the time to iso time type
-//		item.put("createdTime", AttributeValue.fromS(timeIso));
-//
-//		log.debug("[DynamoTicketDao] Prepared item map for putItem: {}", item);
-//
-//
-//		PutItemRequest request = PutItemRequest.builder()
-//				.tableName(dynamoTABLE_NAME)
-//				.item(item)
-//				.conditionExpression("attribute_not_exists(ticketId)")
-//				.build();
-//
-//		log.debug("[DynamoTicketDao] Executing putItem request: {}", request);
-//		try {
-//			dynamoDbClient.putItem(request);
-//			log.debug("[DynamoTicketDao] Successfully persisted ticket with id={}", ticket.getId());
-//		} catch (ConditionalCheckFailedException e) {
-//			log.warn("[DynamoTicketDao] ticketId={} Idempotent Ignore", ticket.getId());
-//		}
-//		return ticket.getId();
-//	}
 
 	@Override
 	public TicketInfo getTicketInfoById(String id) {
@@ -82,6 +49,8 @@ public class DynamoTicketDao implements DynamoTicketDAOInterface {
 		String column = item.get("column").s();
 		String row = item.get("row").s();
 		String createdOnString = item.get("createdTime").s();
+		String statusString = item.get("status").s();
+		TicketStatus status = TicketStatus.valueOf(statusString);
 
 		Instant createdOn;
 		try {
@@ -91,7 +60,7 @@ public class DynamoTicketDao implements DynamoTicketDAOInterface {
 			createdOn = Instant.now();
 		}
 
-		TicketInfo info = new TicketInfo(ticketId, venueId, eventId, zoneId, column, row, createdOn);
+		TicketInfo info = new TicketInfo(ticketId, venueId, eventId, zoneId, column, row, createdOn, status);
 		log.debug("[DynamoTicketDao] Mapped TicketInfo: {}", info);
 		return info;
 	}

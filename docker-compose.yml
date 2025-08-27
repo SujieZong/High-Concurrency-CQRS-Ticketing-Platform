@@ -1,6 +1,6 @@
 # docker-compose.yml 放在项目根目录，与 TicketingPlatform/、RabbitCombinedConsumer/ 平级
 services:
-  # —— 下游依赖 —— 
+  # —— 下游依赖 ——
   redis:
     image: redis:7-alpine
     container_name: dev-redis

@@ -24,7 +24,7 @@ public class TicketPurchaseController {
 		this.ticketService = ticketService;
 	}
 
-	@PostMapping("/tickets")
+	@PostMapping
 	public ResponseEntity<TicketRespondDTO> purchaseTicket(@RequestBody TicketPurchaseRequestDTO requestDTO) {
 
 		String ticketId = UUID.randomUUID().toString();
