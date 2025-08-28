@@ -1,4 +1,4 @@
-package org.java.ticketingplatform.outbox;
+package org.java.ticketingplatform.service.outbox;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,7 @@
 package org.java.ticketingplatform.outbox;
 
 import lombok.RequiredArgsConstructor;
+import org.java.ticketingplatform.config.rabbitmq.RabbitFactory;
 import org.java.ticketingplatform.domain.OutboxEvent;
 import org.java.ticketingplatform.repository.OutboxEventRepository;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -15,12 +16,12 @@ public class OutboxRelay {
 	private final OutboxEventRepository repo;
 	private final RabbitTemplate rabbit;
 
-	@Scheduled(fixedDelay = 500) // 每0.5秒扫一次
+	@Scheduled(fixedDelay = 500) //every 0.5 second scan
 	public void flush() {
 		List<OutboxEvent> batch = repo.findTop50BySentFalseOrderByIdAsc();
 		for (OutboxEvent e : batch) {
 			try {
-				rabbit.convertAndSend("ticket.events", "ticket.created", e.getPayload());
+				rabbit.convertAndSend(RabbitFactory.TICKET_EXCHANGE, "ticket.created", e.getPayload());
 				e.setSent(true);
 				repo.save(e);
 			} catch (Exception ex) {
