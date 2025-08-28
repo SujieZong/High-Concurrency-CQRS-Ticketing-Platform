@@ -45,24 +45,30 @@ public class DynamoTicketDao implements DynamoTicketDAOInterface {
 		String ticketId = item.get("ticketId").s();
 		String venueId = item.get("venueId").s();
 		String eventId = item.get("eventId").s();
-		int zoneId = Integer.parseInt(item.get("zone").n());
-		String column = item.get("column").s();
+		int zoneId = Integer.parseInt(item.get("zoneId").n());
 		String row = item.get("row").s();
-		String createdOnString = item.get("createdTime").s();
+		String column = item.get("column").s();
+		String createdOnString = item.get("createdOn").s();
 		String statusString = item.get("status").s();
-		TicketStatus status = TicketStatus.valueOf(statusString);
+
+		TicketStatus status;
+		try {
+			status = TicketStatus.valueOf(statusString);
+		} catch (IllegalArgumentException ex) {
+			log.warn("[DynamoTicketDao] Unknown status='{}' ticketId={}. Fallback=CREATED", statusString, ticketId);
+			status = TicketStatus.PAID;
+		}
 
 		Instant createdOn;
 		try {
 			createdOn = Instant.parse(createdOnString);
 		} catch (DateTimeParseException e) {
-			log.error("[DynamoTicketDao] Failed to parse createdTime='{}'. Using now()", createdOnString, e);
+			log.error("[DynamoTicketDao] Bad createdOn='{}' ticketId={}. Using now()", createdOnString, ticketId, e);
 			createdOn = Instant.now();
 		}
 
-		TicketInfo info = new TicketInfo(ticketId, venueId, eventId, zoneId, column, row, createdOn, status);
+		TicketInfo info = new TicketInfo(ticketId, venueId, eventId, zoneId, row, column, createdOn, status);
 		log.debug("[DynamoTicketDao] Mapped TicketInfo: {}", info);
 		return info;
 	}
 }
-

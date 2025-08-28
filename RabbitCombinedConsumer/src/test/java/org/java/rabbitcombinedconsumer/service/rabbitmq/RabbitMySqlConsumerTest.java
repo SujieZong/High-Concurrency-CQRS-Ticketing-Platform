@@ -1,7 +1,7 @@
 package org.java.rabbitcombinedconsumer.service.rabbitmq;
 
 import org.java.rabbitcombinedconsumer.model.TicketInfo;
-import org.java.rabbitcombinedconsumer.repository.mysql.JdbcTicketDao;
+import org.java.rabbitcombinedconsumer.repository.mysql.MySqlTicketDao;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -22,7 +22,7 @@ class RabbitMySqlConsumerTest {
 		// 匹配 varargs：any(Object[].class)
 		when(jdbc.update(anyString(), any(Object[].class))).thenReturn(1);
 
-		JdbcTicketDao dao = new JdbcTicketDao(jdbc);
+		MySqlTicketDao dao = new MySqlTicketDao(jdbc);
 
 		TicketInfo t = new TicketInfo();
 		t.setTicketId("t-100");
@@ -65,7 +65,7 @@ class RabbitMySqlConsumerTest {
 		JdbcTemplate jdbc = mock(JdbcTemplate.class);
 		when(jdbc.update(anyString(), any(Object[].class)))
 				.thenThrow(new DuplicateKeyException("dup"));
-		JdbcTicketDao dao = new JdbcTicketDao(jdbc);
+		MySqlTicketDao dao = new MySqlTicketDao(jdbc);
 
 		TicketInfo t = new TicketInfo();
 		t.setTicketId("t-dup");

@@ -18,3 +18,4 @@ aws.dynamodb:
     region:     us-west-2
     accessKey: id
     accessPass: key
+

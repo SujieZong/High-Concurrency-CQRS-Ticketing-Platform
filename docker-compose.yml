@@ -27,6 +27,7 @@ services:
     container_name: dev-dynamodb
     ports:
       - "8000:8000"
+    command: ["-jar","DynamoDBLocal.jar","-sharedDb"]
 
   # —— API 服务 —— 
   ticketing-platform:
