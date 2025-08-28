@@ -26,9 +26,6 @@ public class TicketService implements TicketServiceInterface {
 	private final OutboxService outboxService;
 	private final ObjectMapper objectMapper;
 
-//	private final RabbitProducer rabbitProducer;
-//	private final TicketInfoRepository ticketInfoRepository;
-
 	// transfer input data into a Response DTO object and save to Database through DAO and Mapper
 	@Override
 	@Transactional

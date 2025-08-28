@@ -1,5 +1,6 @@
 package org.java.ticketingplatform;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.java.ticketingplatform.domain.OutboxEvent;
 import org.java.ticketingplatform.outbox.OutboxRelay;
 import org.java.ticketingplatform.repository.OutboxEventRepository;
@@ -17,12 +18,15 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class OutboxRelayTest {
 
+	private final ObjectMapper om = new ObjectMapper();
+
 	@Test
 	void flush_sendsBatchAndMarksSent() {
 		OutboxEventRepository repo = mock(OutboxEventRepository.class);
 		RabbitTemplate rabbit = mock(RabbitTemplate.class);
 
-		OutboxRelay relay = new OutboxRelay(repo, rabbit);
+
+		OutboxRelay relay = new OutboxRelay(repo, rabbit, om);
 
 		OutboxEvent e1 = new OutboxEvent();
 		e1.setId(1L);
@@ -58,7 +62,7 @@ class OutboxRelayTest {
 		OutboxEventRepository repo = mock(OutboxEventRepository.class);
 		RabbitTemplate rabbit = mock(RabbitTemplate.class);
 
-		OutboxRelay relay = new OutboxRelay(repo, rabbit);
+		OutboxRelay relay = new OutboxRelay(repo, rabbit, om);
 
 		OutboxEvent e = new OutboxEvent();
 		e.setId(10L);
