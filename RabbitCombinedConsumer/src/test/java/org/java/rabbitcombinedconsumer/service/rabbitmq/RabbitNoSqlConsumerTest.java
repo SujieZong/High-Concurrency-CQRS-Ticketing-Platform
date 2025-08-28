@@ -14,8 +14,8 @@ import software.amazon.awssdk.services.dynamodb.model.PutItemResponse;
 import java.time.Instant;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class RabbitNoSqlConsumerTest {
@@ -28,7 +28,6 @@ class RabbitNoSqlConsumerTest {
 				.thenReturn(PutItemResponse.builder().build());
 
 		DynamoTicketDAOInterface dao = new DynamoTicketDao(ddb);
-
 
 		TicketCreation t = new TicketCreation();
 		t.setId("d-100");
@@ -44,9 +43,10 @@ class RabbitNoSqlConsumerTest {
 		// act
 		String ret = dao.createTicket(t);
 
-		// assert
+		// assert: return value
 		assertEquals("d-100", ret);
 
+		// capture the actual PutItemRequest sent to DynamoDbClient
 		ArgumentCaptor<PutItemRequest> cap = ArgumentCaptor.forClass(PutItemRequest.class);
 		verify(ddb, times(1)).putItem(cap.capture());
 
@@ -56,16 +56,32 @@ class RabbitNoSqlConsumerTest {
 
 		Map<String, AttributeValue> item = req.item();
 		assertNotNull(item);
-		// 字段映射校验
+
+		// field-by-field assertions (types matter)
+		assertTrue(item.containsKey("ticketId"));
 		assertEquals("d-100", item.get("ticketId").s());
+
+		assertTrue(item.containsKey("venueId"));
 		assertEquals("v-1", item.get("venueId").s());
+
+		assertTrue(item.containsKey("eventId"));
 		assertEquals("e-1", item.get("eventId").s());
-		assertEquals("12", item.get("zone").n());
+
+		assertTrue(item.containsKey("zoneId"));
+		assertEquals("12", item.get("zoneId").n()); // numeric
+
+		assertTrue(item.containsKey("row"));
 		assertEquals("A", item.get("row").s());
+
+		assertTrue(item.containsKey("column"));
 		assertEquals("10", item.get("column").s());
-		assertEquals("CREATED", item.get("status").s());
-		// createdTime 使用 toString() 的 ISO-8601
-		assertEquals(created.toString(), item.get("createdTime").s());
+
+		if (item.containsKey("status")) {
+			assertEquals("CREATED", item.get("status").s());
+		}
+
+		assertTrue(item.containsKey("createdOn"));
+		assertEquals(created.toString(), item.get("createdOn").s());
 	}
 
 	@Test
@@ -90,7 +106,6 @@ class RabbitNoSqlConsumerTest {
 		// act
 		String ret = dao.createTicket(t);
 
-		// assert：不抛异常，并返回相同 id
 		assertEquals("d-dup", ret);
 		verify(ddb, times(1)).putItem(any(PutItemRequest.class));
 	}

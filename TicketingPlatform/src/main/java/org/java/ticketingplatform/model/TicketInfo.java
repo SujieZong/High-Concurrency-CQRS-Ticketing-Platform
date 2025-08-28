@@ -7,8 +7,7 @@ import java.time.Instant;
 
 @Entity
 @Table(name = "ticket")
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class TicketInfo {

@@ -2,17 +2,13 @@ package org.java.rabbitcombinedconsumer.repository.dynamo;
 
 import lombok.extern.slf4j.Slf4j;
 import org.java.rabbitcombinedconsumer.model.TicketCreation;
-import org.java.rabbitcombinedconsumer.model.TicketInfo;
 import org.java.rabbitcombinedconsumer.repository.DynamoTicketDAOInterface;
 import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
-import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 
-import java.time.Instant;
-import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,13 +30,14 @@ public class DynamoTicketDao implements DynamoTicketDAOInterface {
 		item.put("ticketId", AttributeValue.fromS(ticket.getId()));
 		item.put("venueId", AttributeValue.fromS(ticket.getVenueId()));
 		item.put("eventId", AttributeValue.fromS(ticket.getEventId()));
-		item.put("zone", AttributeValue.fromN(String.valueOf(ticket.getZoneId())));
+		item.put("zoneId", AttributeValue.fromN(String.valueOf(ticket.getZoneId())));
 		item.put("row", AttributeValue.fromS(ticket.getRow()));
 		item.put("column", AttributeValue.fromS(ticket.getColumn()));
 		item.put("status", AttributeValue.fromS(ticket.getStatus()));
 
+
 		String timeIso = ticket.getCreatedOn().toString(); // process the time to iso time type
-		item.put("createdTime", AttributeValue.fromS(timeIso));
+		item.put("createdOn", AttributeValue.fromS(timeIso));
 
 		log.debug("[DynamoTicketDao] Prepared item map for putItem: {}", item);
 

@@ -11,11 +11,11 @@ import java.sql.Timestamp;
 
 @Slf4j
 @Repository
-public class JdbcTicketDao implements MySqlTicketDAOInterface {
+public class MySqlTicketDao implements MySqlTicketDAOInterface {
 
 	private final JdbcTemplate jdbcTemplate;
 
-	public JdbcTicketDao(JdbcTemplate jdbcTemplate) {
+	public MySqlTicketDao(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
 	}
 
@@ -30,9 +30,9 @@ public class JdbcTicketDao implements MySqlTicketDAOInterface {
 				""";
 		try {
 			jdbcTemplate.update(sql, ticketInfo.getTicketId(), ticketInfo.getVenueId(), ticketInfo.getEventId(), ticketInfo.getZoneId(), ticketInfo.getRow(), ticketInfo.getColumn(), Timestamp.from(ticketInfo.getCreatedOn()));
-			log.debug("[JdbcTicketDao] Successfully persisted ticket with id={}", ticketInfo.getTicketId());
+			log.debug("[MySqlTicketDao] Successfully persisted ticket with id={}", ticketInfo.getTicketId());
 		} catch (DuplicateKeyException e) {
-			log.warn("[JdbcTicketDao] ticketId = {}, exists skip", ticketInfo.getTicketId());
+			log.warn("[MySqlTicketDao] ticketId = {}, exists skip", ticketInfo.getTicketId());
 		}
 	}
 }
