@@ -12,7 +12,7 @@ public class TicketInfo {
 	private String venueId;
 	private String eventId;
 	private int zoneId;
-	private String column;
 	private String row;
+	private String column;
 	private Instant createdOn;
 }

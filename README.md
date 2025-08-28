@@ -46,6 +46,6 @@ the access stress of a single server, and provide a better service to the consum
 
 
 `./mvnw clean package`
-`./mvnw clean package`
+`mvn package`
 `./localDockerInitiate.sh`
 `docker-compose down`

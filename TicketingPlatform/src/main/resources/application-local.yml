@@ -14,7 +14,7 @@ spring:
       port: 6379
 
 aws.dynamodb:
-    end-point:  http://localhost:8000
+    endPoint:  http://localhost:8000
     region:     us-west-2
-    access-key: id
-    access-pass: key
+    accessKey: id
+    accessPass: key

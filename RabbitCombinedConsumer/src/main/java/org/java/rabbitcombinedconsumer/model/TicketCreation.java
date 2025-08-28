@@ -12,8 +12,8 @@ public class TicketCreation {
 	private String venueId;
 	private String eventId;
 	private int zoneId;
-	private String column;
 	private String row;
+	private String column;
 	private String status; //"CREATED", "PAID", "CANCELLED"
 	private Instant createdOn;
 }

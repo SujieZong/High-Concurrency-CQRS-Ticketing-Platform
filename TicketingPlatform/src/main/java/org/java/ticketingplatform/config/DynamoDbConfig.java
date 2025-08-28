@@ -24,6 +24,18 @@ public class DynamoDbConfig {
 
 	@Bean
 	public DynamoDbClient dynamoDbClient() {
+
+		System.out.println("=== DynamoDB Configuration ===");
+		System.out.println("endPoint: " + endPoint);
+		System.out.println("region: " + region);
+		System.out.println("==============================");
+
+
+		if (region == null || region.isEmpty()) {
+			System.out.println("WARNING: region is null or empty!");
+		}
+
+
 		return DynamoDbClient.builder()
 				.endpointOverride(URI.create(endPoint))
 				.region(Region.of(region))

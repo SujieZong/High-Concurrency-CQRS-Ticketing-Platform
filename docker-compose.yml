@@ -16,6 +16,11 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "status" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   dynamodb:
     image: amazon/dynamodb-local
@@ -33,9 +38,12 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - redis
-      - rabbitmq
-      - dynamodb
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+      dynamodb:
+        condition: service_started
     environment:
       SPRING_PROFILES_ACTIVE: local
 
@@ -55,7 +63,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: Qweasd123
 
       # DynamoDB Local 覆盖（注意绑定到 Compose 服务名 dynamodb:8000）
-      AWS_DYNAMODB_ENDPOINT: http://dynamodb:8000
+      AWS_DYNAMODB_END_POINT: http://dynamodb:8000
       AWS_DYNAMODB_REGION: us-west-2
       AWS_DYNAMODB_ACCESS_KEY: id
       AWS_DYNAMODB_ACCESS_PASS: key
@@ -68,8 +76,10 @@ services:
     image: rabbit-consumer:latest
     container_name: rabbit-consumer
     depends_on:
-      - rabbitmq
-      - dynamodb
+      rabbitmq:
+        condition: service_healthy
+      dynamodb:
+        condition: service_started
     environment:
       SPRING_PROFILES_ACTIVE: local
 
@@ -85,7 +95,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: Qweasd123
 
       # DynamoDB Local
-      AWS_DYNAMODB_ENDPOINT: http://dynamodb:8000
+      AWS_DYNAMODB_END_POINT: http://dynamodb:8000
       AWS_DYNAMODB_REGION: us-west-2
       AWS_DYNAMODB_ACCESS_KEY: id
       AWS_DYNAMODB_ACCESS_PASS: key
