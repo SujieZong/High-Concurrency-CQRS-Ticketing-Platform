@@ -7,7 +7,7 @@ import org.java.ticketingplatform.dto.TicketCreationDTO;
 import org.java.ticketingplatform.dto.TicketRespondDTO;
 import org.java.ticketingplatform.exception.CreateTicketException;
 import org.java.ticketingplatform.exception.SeatOccupiedException;
-import org.java.ticketingplatform.outbox.OutboxService;
+import org.java.ticketingplatform.service.outbox.OutboxService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
