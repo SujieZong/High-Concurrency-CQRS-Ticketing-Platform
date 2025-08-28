@@ -2,11 +2,13 @@ package org.java.rabbitcombinedconsumer.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class TicketCreation {
 	private String id;
 	private String venueId;
