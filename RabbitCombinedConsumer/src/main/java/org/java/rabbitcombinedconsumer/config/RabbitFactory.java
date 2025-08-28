@@ -30,8 +30,8 @@ public class RabbitFactory {
 
 	// put the message into TicketExchange
 	@Bean
-	public DirectExchange ticketExchange() {
-		return new DirectExchange(TICKET_EXCHANGE);
+	public TopicExchange ticketExchange() {
+		return new TopicExchange(TICKET_EXCHANGE, true, false);
 	}
 
 	/**
@@ -39,25 +39,17 @@ public class RabbitFactory {
 	 * message will be post to both of those two queues.
 	 */
 	@Bean
-	public Binding bindingCommand(Queue ticketNosqlQueue, DirectExchange ticketExchange) {
-		return BindingBuilder
-				.bind(ticketNosqlQueue)
-				.to(ticketExchange)
-				.with("ticket.created");
+	public Binding bindingNosql(Queue ticketNosqlQueue, TopicExchange ticketExchange) {
+		return BindingBuilder.bind(ticketNosqlQueue).to(ticketExchange).with("ticket.created");
 	}
 
 	@Bean
-	public Binding bindingQuery(Queue ticketSqlQueue, DirectExchange ticketExchange) {
-		return BindingBuilder
-				.bind(ticketSqlQueue)
-				.to(ticketExchange)
-				.with("ticket.created");
+	public Binding bindingSql(Queue ticketSqlQueue, TopicExchange ticketExchange) {
+		return BindingBuilder.bind(ticketSqlQueue).to(ticketExchange).with("ticket.created");
 	}
 
 	@Bean
-	public MessageConverter jsonMessageConverter() {
-		return new Jackson2JsonMessageConverter();
-	}
+	public MessageConverter jsonMessageConverter() { return new Jackson2JsonMessageConverter(); }
 
 	@Bean
 	public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory,
@@ -68,7 +60,7 @@ public class RabbitFactory {
 	}
 
 
-	@Bean
+	@Bean(name = "rabbitListenerContainerFactory")
 	public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
 			ConnectionFactory connectionFactory,
 			MessageConverter messageConverter
@@ -82,10 +74,13 @@ public class RabbitFactory {
 		//if failed put back to queue
 		factory.setDefaultRequeueRejected(true);
 
-		factory.setConcurrentConsumers(100);
-		factory.setMaxConcurrentConsumers(300);
-		factory.setPrefetchCount(300);
+		factory.setConcurrentConsumers(20);
+		factory.setMaxConcurrentConsumers(50);
+		factory.setPrefetchCount(100);
 
 		return factory;
 	}
+
+
 }
+
