@@ -25,11 +25,12 @@ public class TicketInfo {
 	@Column(name = "zone_id")
 	private int zoneId;
 
+	@Column(name = "row_label")
+	private String row;
+
 	@Column(name = "col_label")
 	private String column;
 
-	@Column(name = "row_label")
-	private String row;
 	// have restrictions on changing this date
 	@Column(name = "created_on", nullable = false, updatable = false)
 	private Instant createdOn;
