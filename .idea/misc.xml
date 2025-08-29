@@ -6,6 +6,9 @@
       <list>
         <option value="$PROJECT_DIR$/TicketingPlatform/pom.xml" />
         <option value="$PROJECT_DIR$/RabbitCombinedConsumer/pom.xml" />
+        <option value="$PROJECT_DIR$/ContractsFoundation/pom.xml" />
+        <option value="$PROJECT_DIR$/TicketContracts/pom.xml" />
+        <option value="$PROJECT_DIR$/pom.xml" />
       </list>
     </option>
   </component>

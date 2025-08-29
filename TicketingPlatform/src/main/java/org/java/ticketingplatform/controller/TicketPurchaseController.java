@@ -37,6 +37,7 @@ public class TicketPurchaseController {
 				requestDTO.getZoneId(),
 				requestDTO.getRow(),
 				requestDTO.getColumn(),
+				"PAID",
 				creationTime
 		);
 
