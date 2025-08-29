@@ -1,0 +1,30 @@
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.java</groupId>
+    <artifactId>ticketing-parent</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>TicketContracts</module>
+        <module>TicketingPlatform</module>          <!-- 将重命名为 reservation-service ，但此步先不改 -->
+        <module>RabbitCombinedConsumer</module>     <!-- 将重命名为 projector-service -->
+<!--        <module>QueryService</module>               &lt;!&ndash; 新建空壳，占位 &ndash;&gt;-->
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>3.4.5</version>
+                <type>pom</type><scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.15.2</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>
