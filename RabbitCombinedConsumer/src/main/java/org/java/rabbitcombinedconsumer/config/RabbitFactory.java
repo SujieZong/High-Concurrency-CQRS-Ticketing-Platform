@@ -14,14 +14,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 public class RabbitFactory {
 
 	public static final String TICKET_EXCHANGE = "ticket.exchange";
-//	public static final String TICKET_NOSQL = "ticketNoSQL";
 	public static final String TICKET_SQL = "ticketSQL";
 
-	//NoSQL queue
-//	@Bean
-//	public Queue ticketNosqlQueue() {
-//		return new Queue(TICKET_NOSQL, true);
-//	}
 	//SQL queue
 	@Bean
 	public Queue ticketSqlQueue() {
@@ -33,15 +27,6 @@ public class RabbitFactory {
 	public TopicExchange ticketExchange() {
 		return new TopicExchange(TICKET_EXCHANGE, true, false);
 	}
-
-	/**
-	 * Binding command when exchange received routing key "ticket.created", received
-	 * message will be post to both of those two queues.
-	 */
-//	@Bean
-//	public Binding bindingNosql(Queue ticketNosqlQueue, TopicExchange ticketExchange) {
-//		return BindingBuilder.bind(ticketNosqlQueue).to(ticketExchange).with("ticket.created");
-//	}
 
 	@Bean
 	public Binding bindingSql(Queue ticketSqlQueue, TopicExchange ticketExchange) {
@@ -69,9 +54,7 @@ public class RabbitFactory {
 		factory.setConnectionFactory(connectionFactory);
 		factory.setMessageConverter(messageConverter);
 
-		//change to manual ack
 		factory.setAcknowledgeMode(AcknowledgeMode.MANUAL);
-		//if failed put back to queue
 		factory.setDefaultRequeueRejected(true);
 
 		factory.setConcurrentConsumers(20);
@@ -80,7 +63,5 @@ public class RabbitFactory {
 
 		return factory;
 	}
-
-
 }
 
