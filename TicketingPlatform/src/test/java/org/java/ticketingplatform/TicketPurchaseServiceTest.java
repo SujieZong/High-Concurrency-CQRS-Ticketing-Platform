@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.java.ticketingplatform.dto.TicketCreationDTO;
 import org.java.ticketingplatform.dto.TicketRespondDTO;
 import org.java.ticketingplatform.exception.SeatOccupiedException;
-import org.java.ticketingplatform.service.SeatOccupiedRedisFacade;
-import org.java.ticketingplatform.service.TicketService;
+import org.java.ticketingplatform.service.redis.SeatOccupiedRedisFacade;
+import org.java.ticketingplatform.service.purchase.TicketPurchaseService;
 import org.java.ticketingplatform.service.outbox.OutboxService;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -13,7 +13,7 @@ import org.mockito.ArgumentCaptor;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class TicketServiceTest {
+public class TicketPurchaseServiceTest {
 
 	@Test
 	void purchaseTicket_success_emitsOutboxAndReturnsDTO() throws Exception {
@@ -22,7 +22,7 @@ public class TicketServiceTest {
 		OutboxService outbox = mock(OutboxService.class);
 		ObjectMapper mapper = new ObjectMapper();
 
-		TicketService svc = new TicketService(seatFacade, outbox, mapper);
+		TicketPurchaseService svc = new TicketPurchaseService(seatFacade, outbox, mapper);
 
 		// Mock
 		TicketCreationDTO dto = mock(TicketCreationDTO.class);
@@ -72,7 +72,7 @@ public class TicketServiceTest {
 		SeatOccupiedRedisFacade seatFacade = mock(SeatOccupiedRedisFacade.class);
 		OutboxService outbox = mock(OutboxService.class);
 		ObjectMapper mapper = new ObjectMapper();
-		TicketService svc = new TicketService(seatFacade, outbox, mapper);
+		TicketPurchaseService svc = new TicketPurchaseService(seatFacade, outbox, mapper);
 
 		TicketCreationDTO dto = mock(TicketCreationDTO.class);
 		when(dto.getEventId()).thenReturn("E1");

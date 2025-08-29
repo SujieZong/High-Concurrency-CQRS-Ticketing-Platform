@@ -3,7 +3,7 @@ package org.java.ticketingplatform.controller;
 import org.java.ticketingplatform.dto.TicketCreationDTO;
 import org.java.ticketingplatform.dto.TicketPurchaseRequestDTO;
 import org.java.ticketingplatform.dto.TicketRespondDTO;
-import org.java.ticketingplatform.service.TicketServiceInterface;
+import org.java.ticketingplatform.service.TicketPurchaseServiceInterface;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,9 +18,9 @@ import java.util.UUID;
 @RequestMapping("/api/v1/tickets")
 public class TicketPurchaseController {
 
-	private final TicketServiceInterface ticketService;
+	private final TicketPurchaseServiceInterface ticketService;
 
-	public TicketPurchaseController(TicketServiceInterface ticketService) {
+	public TicketPurchaseController(TicketPurchaseServiceInterface ticketService) {
 		this.ticketService = ticketService;
 	}
 
@@ -40,7 +40,7 @@ public class TicketPurchaseController {
 				creationTime
 		);
 
-		// Use the new TicketService
+		// Use the new TicketPurchaseService
 		TicketRespondDTO ticketResponse = ticketService.purchaseTicket(creationDTO);
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(ticketResponse);

@@ -5,8 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.java.ticketingplatform.dto.TicketInfoDTO;
 import org.java.ticketingplatform.exception.TicketNotFoundException;
 import org.java.ticketingplatform.mapper.TicketMapper;
-import org.java.ticketingplatform.model.TicketInfo;
-import org.java.ticketingplatform.repository.DynamoTicketDAOInterface;
 import org.java.ticketingplatform.repository.mysql.TicketInfoRepository;
 import org.java.ticketingplatform.service.QueryServiceInterface;
 import org.springframework.stereotype.Service;
@@ -20,18 +18,14 @@ import java.math.BigDecimal;
 public class QueryService implements QueryServiceInterface {
 	private final TicketInfoRepository ticketInfoRepository;
 	private final TicketMapper tickerMapper;
-	private final DynamoTicketDAOInterface dynamoTicketDao;
 
 	@Override
 	@Transactional(readOnly = true)
 	public TicketInfoDTO getTicket(String ticketId) {
-		log.debug("[TicketService][getTicket] start query ticketId={}", ticketId);
+		log.debug("[TicketPurchaseService][getTicket] start query ticketId={}", ticketId);
 
-		TicketInfo ticketEntity = dynamoTicketDao.getTicketInfoById(ticketId);
-
-		if (ticketEntity == null) {
-			throw new TicketNotFoundException("Ticket not found with ID: " + ticketId);
-		}
+		var ticketEntity = ticketInfoRepository.findById(ticketId)
+				.orElseThrow(() -> new TicketNotFoundException("Ticket not found with ID: " + ticketId));
 
 		return tickerMapper.toInfoDto(ticketEntity);
 	}

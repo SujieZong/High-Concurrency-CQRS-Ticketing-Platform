@@ -1,4 +1,4 @@
-package org.java.ticketingplatform.service;
+package org.java.ticketingplatform.service.purchase;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +7,8 @@ import org.java.ticketingplatform.dto.TicketCreationDTO;
 import org.java.ticketingplatform.dto.TicketRespondDTO;
 import org.java.ticketingplatform.exception.CreateTicketException;
 import org.java.ticketingplatform.exception.SeatOccupiedException;
+import org.java.ticketingplatform.service.redis.SeatOccupiedRedisFacade;
+import org.java.ticketingplatform.service.TicketPurchaseServiceInterface;
 import org.java.ticketingplatform.service.outbox.OutboxService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +21,7 @@ import java.util.UUID;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class TicketService implements TicketServiceInterface {
+public class TicketPurchaseService implements TicketPurchaseServiceInterface {
 
 	//	private final TicketMapper ticketMapper;
 	private final SeatOccupiedRedisFacade seatOccupiedRedisFacade;
@@ -30,7 +32,7 @@ public class TicketService implements TicketServiceInterface {
 	@Override
 	@Transactional
 	public TicketRespondDTO purchaseTicket(TicketCreationDTO dto) {
-		log.info("[TicketService] purchaseTicket start: eventId={}, zone={}, row={}, col={}",
+		log.info("[TicketPurchaseService] purchaseTicket start: eventId={}, zone={}, row={}, col={}",
 				dto.getEventId(), dto.getZoneId(), dto.getRow(), dto.getColumn());
 
 
@@ -43,10 +45,10 @@ public class TicketService implements TicketServiceInterface {
 					dto.getRow(),
 					dto.getColumn()
 			);
-			log.debug("[TicketService] seat occupied OK for eventId={}, seat={}-{}",
+			log.debug("[TicketPurchaseService] seat occupied OK for eventId={}, seat={}-{}",
 					dto.getEventId(), dto.getRow(), dto.getColumn());
 		} catch (SeatOccupiedException e) {
-			log.warn("[TicketService] seat already occupied: eventId={}, seat={}-{}",
+			log.warn("[TicketPurchaseService] seat already occupied: eventId={}, seat={}-{}",
 					dto.getEventId(), dto.getRow(), dto.getColumn());
 			throw e;
 		}
@@ -94,9 +96,9 @@ public class TicketService implements TicketServiceInterface {
 					dto.getRow(),
 					dto.getColumn()
 			);
-			log.info("[TicketService] seat released after failure, ticketId={}", ticketId);
+			log.info("[TicketPurchaseService] seat released after failure, ticketId={}", ticketId);
 		} catch (Exception re) {
-			log.error("[TicketService] seat release FAILED, ticketId={}, cause={}, releaseErr={}",
+			log.error("[TicketPurchaseService] seat release FAILED, ticketId={}, cause={}, releaseErr={}",
 					ticketId, original.getMessage(), re.getMessage(), re);
 		}
 	}
