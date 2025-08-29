@@ -1,6 +1,8 @@
 # High-Concurrency-CQRS-Ticketing-Platform
 A ticket-purchasing backend designed for high contention and throughput. It uses CQRS to separate the write path (seat reservation and event emission) from the read path (queries and analytics). Redis + Lua performs O(1) atomic seat locks, RabbitMQ decouples user requests from persistence, DynamoDB stores the write model, and MySQL (via JPA) stores the read model.
 
+- Currently working on updating the project structure and implementation.
+
 ## Project Structure
 - Two Docker images:
     - Server image (write + query APIs)
