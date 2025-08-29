@@ -6,9 +6,9 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>TicketContracts</module>
-        <module>TicketingPlatform</module>          <!-- 将重命名为 reservation-service ，但此步先不改 -->
-        <module>RabbitCombinedConsumer</module>     <!-- 将重命名为 projector-service -->
+<!--        <module>TicketContracts</module>-->
+        <module>TicketingPlatform</module>
+        <module>RabbitCombinedConsumer</module>
 <!--        <module>QueryService</module>               &lt;!&ndash; 新建空壳，占位 &ndash;&gt;-->
     </modules>
 
