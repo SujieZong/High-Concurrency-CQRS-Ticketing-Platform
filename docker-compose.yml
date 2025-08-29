@@ -27,7 +27,8 @@ services:
     container_name: dev-dynamodb
     ports:
       - "8000:8000"
-    command: ["-jar","DynamoDBLocal.jar","-sharedDb"]
+    command: ["-jar","DynamoDBLocal.jar","-sharedDb"] #share across regions
+    # could add volume here to make DynamoDB permanent
 
   # —— API 服务 —— 
   ticketing-platform:

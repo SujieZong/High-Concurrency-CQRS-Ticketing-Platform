@@ -1,51 +1,140 @@
 # High-Concurrency-CQRS-Ticketing-Platform
-The project implements a streamlined ticket-purchasing application using Spring Boot, Redis, RabbitMQ, DynamoDB, and MySQL. Testing will focus on highly concurrent purchase requests, pushing the system to its limits with intentional seat-conflict scenarios to verify correctness under load.
+A ticket-purchasing backend designed for high contention and throughput. It uses CQRS to separate the write path (seat reservation and event emission) from the read path (queries and analytics). Redis + Lua performs O(1) atomic seat locks, RabbitMQ decouples user requests from persistence, DynamoDB stores the write model, and MySQL (via JPA) stores the read model.
 
-### Project Structure
-To describe the overall structure, I built two distinct Docker images. The first image includes two
-REST controllers, one for ticket creation and one for ticket queries. The image includes Spring
-Boot bootstrap, the web API layer, the service layer that calls Redis, and the RabbitMQ
-producer that publishes ticket events.
+## Project Structure
+- Two Docker images:
+    - Server image (write + query APIs)
+        - Spring Boot bootstrap, REST controllers (ticket creation & ticket queries), service layer (Redis/Lua seat lock), and RabbitMQ producer that publishes ticket events.
 
-The second image contains the RabbitMQ consumers for both SQL and NoSQL pipelines, the
-MySQL and DynamoDB DAO implementations, and all persistence configuration needed to
-save tickets into each data store.
+    - Consumer image (projectors)
+        - RabbitMQ consumers for SQL and NoSQL pipelines, MySQL and DynamoDB DAO implementations, and persistence configuration to store tickets in each data store.
 
- On AWS, all parts are running on separate EC2 instances. Server
-Instance runs on one server, RabbitMQ and RabbitConsumer run on another server. Redis and
-DynamoDB are also running on 2 separate instances since AWS Redis and DynamoDB
-services are not allowed to be used.
+On AWS, components run on separate EC2 instances. The Server runs on one host, RabbitMQ and the Consumer on another. Redis and DynamoDB run on their own hosts due to managed service restrictions.
 
-### Data Model
-The data model has the following main models and those are being used in my design to
-simulate a real ticket purchasing program backend:
-- Venue: venueId, List of Zones
-    - The List of zones is different according to different Venues, for future proofing
-- Event: eventId, venueId, name, type, date
-    - Basic Information of events, combined with VenueId to pin to a specific event.
-- Zone: zoneId, ticketPrice, rowCount, colCount
-    - The price in my simulation is assigned according to zones.
-- TicketCreation: ticketId, venueId, eventId, zoneId, row, column, status, and createdOn
-timestamp
-    - The write-model DTO carries the object that is generated from the
-TicketCreation, which will be written to the NoSQL database
-- TicketInfo: ticketId, venueId, eventId, zoneId, row, column, and createdOn timestamp
-    - The read model used by query APIs. And also, the structure is saved to the SQL database.
+## Data Model
 
-### Summarization
-In summary, this ticketing system combines a lightweight API layer with an atomic, in-memory
-seat reservation mechanism, an asynchronous message processing, and dual persistence
-stores to deliver both high throughput and strong consistency under contention. Redis with Lua
-scripts enforces single-seat guarantees at O(1) cost, RabbitMQ decouples writing from the user
-path, and DynamoDB/MySQL implement a CQRS-style write vs read model. By careful tuning
-the connection pools and consumer threads, the platform scales to thousand of concurrent
-users, while JMeter tests confirm that duplicate requests are rejected without throttling overall
-throughput. Redis sharding, a read-only cache, and a transparent routing layer will be some of
-the future improvements. Those improvements will provide a higher concurrency level, distribute
-the access stress of a single server, and provide a better service to the consumers.
+Venue: venueId, zones[]
+
+Event: eventId, venueId, name, type, date
+
+Zone: zoneId, ticketPrice, rowCount, colCount
+
+TicketCreation (write DTO / DynamoDB):
+ticketId, venueId, eventId, zoneId, row, column, status, createdOn
+
+TicketInfo (read model / MySQL):
+ticketId, venueId, eventId, zoneId, row, column, createdOn
+
+DynamoDB attributes:
+ticketId(S), venueId(S), eventId(S), zoneId(N), row(S), column(S), status(S), createdOn.
 
 
-`./mvnw clean package`
-`mvn package`
-`./localDockerInitiate.sh`
-`docker-compose down`
+## Architecture
+**Write path**
+- REST API receives the purchase request → Redis Lua atomically checks/locks a seat → on success publishes an event to RabbitMQ.
+
+**Consumers (projectors)**
+- Subscribe to events and write idempotently:
+    - DynamoDB (write model) using attribute_not_exists(ticketId) for idempotence.
+    - MySQL (read model) using JPA to support queries and counts.
+
+
+## Latest Updates
+- JDBC → Spring Data JPA (read side/MySQL)
+    - Less boilerplate and consistent transaction/mapping semantics and simpler tests.
+
+- RabbitMQ-based CQRS
+    - change from MySQL Direct write to async, sending message through outbox.
+    - Writes lock seats and enqueue events; consumers asynchronously project to DynamoDB/MySQL.
+
+- One-click local bring-up with Docker
+    - docker-compose starts Redis, RabbitMQ, MySQL, DynamoDB Local, and both service images.
+
+- Unified DynamoDB schema
+    - Standard attribute names/types (e.g., zoneId, createdOn) across producer/consumer, removing 500 errors caused by schema drift.
+
+- DynamoDB Local with -sharedDb
+    - All regions/accounts share one local DB file to avoid “written but cannot read” issues in multi-service local testing.
+
+## TODO
+
+- Update Structure to a Microservice structure 
+    - Purchase service
+    - Query Service 
+    - Message terminal service
+- Update RabbitMQ to Kafka, better concurrency and persistent support
+- Add payment verification functionality
+    - hold space for consumer while making payment
+    - Payment verification 
+    - Undo Purchase, undo seat purchase, release seat hold. 
+
+
+## Run Locally
+- `./mvnw clean package`
+    - run in ticketing and RabbitConsumer project
+- `./localDockerInitiate.sh`
+- `docker-compose down`
+
+
+## REST API
+
+### Purchase API (Write Path)
+- `POST /api/v1/tickets`
+  - Request Body:
+    ```json
+    {
+      "venueId": "Venue1",
+      "eventId": "Event1",
+      "zoneId": 2,
+      "row": "10",
+      "column": "b"
+    }
+    ```
+  - Response (201 Created):
+    ```json
+        {
+        "ticketId": "UUID",
+        "zoneId": 2,
+        "row": "b",
+        "column": "10",
+        "createdOn": "time stamp"
+        }
+    ```
+
+### Query API (Read Path)
+- `GET /api/v1/tickets/{ticketId}`
+  - Response:
+    ```json
+    {
+    "ticketId": "UUID",
+    "venueId": "Venue1",
+    "eventId": "Event1",
+    "zoneId": 2,
+    "row": "10",
+    "column": "b",
+    "status": "PAID",
+    "createdOn": "time stamp"
+    }
+    ```
+    - Error:  404 Not Found if ticket does not exist.
+
+- `GET /api/v1/tickets/count/{eventId}`
+  - Returns how many tickets sold per zone.
+    ```json
+    {
+    "eventId": "Event1",
+    "zones": [
+        { "zoneId": 1, "soldCount": 120 },
+        { "zoneId": 2, "soldCount": 300 }
+    ]
+    }
+    ```
+
+- `GET /api/v1/tickets/money/{venueId}/{eventId}"`
+    - Response:
+        ```JSON
+        {
+        "eventId": "Event1",
+        "ticketPrice": 120.0
+        }
+        ```
