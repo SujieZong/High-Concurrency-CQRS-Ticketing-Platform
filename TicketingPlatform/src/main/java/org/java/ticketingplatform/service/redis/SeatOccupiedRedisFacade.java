@@ -1,4 +1,4 @@
-package org.java.ticketingplatform.service;
+package org.java.ticketingplatform.service.redis;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -6,7 +6,6 @@ import org.java.ticketingplatform.exception.RowFullException;
 import org.java.ticketingplatform.exception.SeatOccupiedException;
 import org.java.ticketingplatform.exception.ZoneFullException;
 import org.java.ticketingplatform.service.initialize.VenueConfigService;
-import org.java.ticketingplatform.service.redis.RedisKeyUtil;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;

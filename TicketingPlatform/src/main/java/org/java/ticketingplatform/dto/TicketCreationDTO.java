@@ -15,5 +15,6 @@ public class TicketCreationDTO {
 	private int zoneId;
 	private String row;
 	private String column;
+	private String status; //"CREATED", "PAID", "CANCELLED"
 	private Instant createdOn;
 }

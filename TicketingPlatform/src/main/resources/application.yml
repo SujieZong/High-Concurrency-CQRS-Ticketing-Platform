@@ -42,7 +42,7 @@ logging:
   level:
     root: INFO
     org.java.ticketingplatform.service: DEBUG
-    org.java.ticketingplatform.service.SeatOccupiedRedisFacade: TRACE
+    org.java.ticketingplatform.service.org.java.ticketingplatform.service.redis.SeatOccupiedRedisFacade: TRACE
 
 ---
 # ==============================
