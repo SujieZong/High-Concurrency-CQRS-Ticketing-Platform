@@ -1,24 +1,16 @@
 # High-Concurrency-CQRS-Ticketing-Platform
-A high-contention ticketing backend using CQRS. The write model is persisted synchronously to DynamoDB (source of truth). Read queries are served from a MySQL materialized view that is asynchronously projected via RabbitMQ events. Redis + Lua provides O(1) atomic seat locking. An Outbox pattern guarantees event delivery to RabbitMQ.
+A ticket-purchasing backend designed for high contention and throughput. It uses CQRS to separate the write path (seat reservation and event emission) from the read path (queries and analytics). Redis + Lua performs O(1) atomic seat locks, RabbitMQ decouples user requests from persistence, DynamoDB stores the write model, and MySQL (via JPA) stores the read model.
 
-##Project Structure
- 
-Created three Spring Boot services (each has its own Docker image)—currently 2 services:
+- Currently working on updating the project structure and implementation.
 
-- reservation-service (write API)
-  - REST controllers for ticket purchase.
-  - Redis/Lua seat lock (hold/release).
-  - Synchronous write to DynamoDB (write model / SoT).
-  - Outbox table + relay: serialize ticket.created → publish to RabbitMQ.
-- projector-service (read projector / consumer)
-  - Subscribes to ticket.created from RabbitMQ.
-  - Writes idempotently to MySQL (read model) only.
-  - No DynamoDB writes here (NoSQL consumer removed).
-- query-service (read API) -- Working on separating
-  - REST controllers for ticket queries & counts.
-  - Connects read-only to MySQL (no writes).
+## Project Structure
+- Two Docker images:
+    - Server image (write + query APIs)
+        - Spring Boot bootstrap, REST controllers (ticket creation & ticket queries), service layer (Redis/Lua seat lock), and RabbitMQ producer that publishes ticket events.
 
-Local dev uses docker-compose to bring up: Redis, RabbitMQ, MySQL, DynamoDB Local, plus the 3 services.
+    - Consumer image (projectors)
+        - RabbitMQ consumers for SQL and NoSQL pipelines, MySQL and DynamoDB DAO implementations, and persistence configuration to store tickets in each data store.
+
 On AWS, components run on separate EC2 instances. The Server runs on one host, RabbitMQ and the Consumer on another. Redis and DynamoDB run on their own hosts due to managed service restrictions.
 
 ## Data Model
@@ -49,14 +41,19 @@ ticketId(S), venueId(S), eventId(S), zoneId(N), row(S), column(S), status(S), cr
     - MySQL (read model) using JPA to support queries and counts.
 
 
-## Latest Finished Updates
+## Latest Updates
 - JDBC → Spring Data JPA (read side/MySQL)
     - Less boilerplate and consistent transaction/mapping semantics and simpler tests.
 
-- Direct Dynamo Write on the write path
-  - reservation-service writes to DynamoDB synchronously.
-  - Outbox → RabbitMQ → projector-service → MySQL.
-  - Removed DynamoDB writes from projector-service (NoSQL consumer & its queue/bindings deleted).
+- RabbitMQ-based CQRS
+    - change from MySQL Direct write to async, sending message through outbox.
+    - Writes lock seats and enqueue events; consumers asynchronously project to DynamoDB/MySQL.
+
+- One-click local bring-up with Docker
+    - docker-compose starts Redis, RabbitMQ, MySQL, DynamoDB Local, and both service images.
+
+- Unified DynamoDB schema
+    - Standard attribute names/types (e.g., zoneId, createdOn) across producer/consumer, removing 500 errors caused by schema drift.
 
 - DynamoDB Local with -sharedDb
     - All regions/accounts share one local DB file to avoid “written but cannot read” issues in multi-service local testing.
