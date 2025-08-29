@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/High-Concurrency-CQRS-Ticketing-Platform.iml" filepath="$PROJECT_DIR$/.idea/High-Concurrency-CQRS-Ticketing-Platform.iml" />
+      <module fileurl="file://$PROJECT_DIR$/TicketingPlatform/TicketingPlatform.iml" filepath="$PROJECT_DIR$/TicketingPlatform/TicketingPlatform.iml" />
     </modules>
   </component>
 </project>
