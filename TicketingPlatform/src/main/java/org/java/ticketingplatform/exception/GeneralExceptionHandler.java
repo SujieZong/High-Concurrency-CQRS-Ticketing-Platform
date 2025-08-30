@@ -9,12 +9,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class GeneralExceptionHandler {
 
-	@ExceptionHandler(TicketNotFoundException.class)
-	public ResponseEntity<String> handleTicketNotFound(TicketNotFoundException ex) {
-		String errorMessage = ex.getMessage();
-		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
-	}
-
 	public ResponseEntity<String> handleTicketException(CreateTicketException ex){
 		String errorMessage = ex.getMessage();
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
