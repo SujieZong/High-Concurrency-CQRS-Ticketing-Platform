@@ -1,6 +1,5 @@
 # docker-compose.yml 放在项目根目录，与 TicketingPlatform/、RabbitCombinedConsumer/ 平级
 services:
-  # —— 下游依赖 ——
   redis:
     image: redis:7-alpine
     container_name: dev-redis
@@ -30,13 +29,14 @@ services:
     command: ["-jar","DynamoDBLocal.jar","-sharedDb"] #share across regions
     # could add volume here to make DynamoDB permanent
 
-  # —— API 服务 —— 
-  ticketing-platform:
+  # —— API ——
+  # —— Purchase Service ——
+  purchase-service:
     build:
-      context: ./TicketingPlatform
-      dockerfile: Docker
-    image: ticketing-platform:latest
-    container_name: ticketing-platform
+      context: ./PurchaseService
+      dockerfile: Dockerfile
+    image: purchase-service:latest
+    container_name: purchase-service
     ports:
       - "8080:8080"
     depends_on:
@@ -59,29 +59,40 @@ services:
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: guest
 
-      # MySQL（宿主机）
-      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/ticket_platform?serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: Qweasd123
-
-      # DynamoDB Local 覆盖（注意绑定到 Compose 服务名 dynamodb:8000）
+      # DynamoDB Local
       AWS_DYNAMODB_END_POINT: http://dynamodb:8000
       AWS_DYNAMODB_REGION: us-west-2
       AWS_DYNAMODB_ACCESS_KEY: id
       AWS_DYNAMODB_ACCESS_PASS: key
 
-  # —— Consumer 服务 —— 
+  # —— Query Service ——
+  query-service:
+    build:
+      context: ./QueryService
+      dockerfile: Dockerfile
+    image: query-service:latest
+    container_name: query-service
+    ports:
+      - "8081:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/ticket_platform?serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Qweasd123
+
+  # —— Consumer ——
   rabbit-consumer:
     build:
       context: ./RabbitCombinedConsumer
-      dockerfile: Docker
+      dockerfile: Dockerfile
     image: rabbit-consumer:latest
     container_name: rabbit-consumer
     depends_on:
       rabbitmq:
         condition: service_healthy
-      dynamodb:
-        condition: service_started
+#      dynamodb:
+#        condition: service_started
     environment:
       SPRING_PROFILES_ACTIVE: local
 
@@ -91,13 +102,13 @@ services:
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: guest
 
-      # MySQL（宿主机）
+      # MySQL
       SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/ticket_platform?serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: Qweasd123
 
-      # DynamoDB Local
-      AWS_DYNAMODB_END_POINT: http://dynamodb:8000
-      AWS_DYNAMODB_REGION: us-west-2
-      AWS_DYNAMODB_ACCESS_KEY: id
-      AWS_DYNAMODB_ACCESS_PASS: key
+#      # DynamoDB Local
+#      AWS_DYNAMODB_END_POINT: http://dynamodb:8000
+#      AWS_DYNAMODB_REGION: us-west-2
+#      AWS_DYNAMODB_ACCESS_KEY: id
+#      AWS_DYNAMODB_ACCESS_PASS: key

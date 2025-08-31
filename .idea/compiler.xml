@@ -6,9 +6,8 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="High-Concurrency-CQRS-Ticketing-Platform" />
       </profile>
-      <profile name="Annotation profile for TicketingPlatform" enabled="true">
+      <profile name="Annotation profile for ticketing-parent" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -20,13 +19,13 @@
           <entry name="$MAVEN_REPOSITORY$/org/mapstruct/mapstruct-processor/1.6.3/mapstruct-processor-1.6.3.jar" />
           <entry name="$MAVEN_REPOSITORY$/org/mapstruct/mapstruct/1.6.3/mapstruct-1.6.3.jar" />
         </processorPath>
-        <module name="TicketingPlatform" />
         <module name="RabbitCombinedConsumer" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="TicketContracts" target="1.8" />
       <module name="ticketing-parent" target="1.5" />
+      <module name="TicketingPlatform" target="17" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">

@@ -1,5 +1,6 @@
 package org.java.rabbitcombinedconsumer.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -14,6 +15,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 public class RabbitFactory {
 
 	public static final String TICKET_EXCHANGE = "ticket.exchange";
+	public static final String ROUTING_TICKET_CREATED = "ticket.created";
 	public static final String TICKET_SQL = "ticketSQL";
 
 	//SQL queue
@@ -30,22 +32,17 @@ public class RabbitFactory {
 
 	@Bean
 	public Binding bindingSql(Queue ticketSqlQueue, TopicExchange ticketExchange) {
-		return BindingBuilder.bind(ticketSqlQueue).to(ticketExchange).with("ticket.created");
+		return BindingBuilder.bind(ticketSqlQueue).to(ticketExchange).with(ROUTING_TICKET_CREATED);
 	}
 
 	@Bean
-	public MessageConverter jsonMessageConverter() { return new Jackson2JsonMessageConverter(); }
-
-	@Bean
-	public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory,
-	                                     MessageConverter messageConverter) {
-		RabbitTemplate template = new RabbitTemplate(connectionFactory);
-		template.setMessageConverter(messageConverter);
-		return template;
+	public MessageConverter jackson2Converter(ObjectMapper om) {
+		var c = new Jackson2JsonMessageConverter(om);
+		c.setCreateMessageIds(true);
+		return c;
 	}
 
-
-	@Bean(name = "rabbitListenerContainerFactory")
+	@Bean(name = "manualAckContainerFactory")
 	public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
 			ConnectionFactory connectionFactory,
 			MessageConverter messageConverter
