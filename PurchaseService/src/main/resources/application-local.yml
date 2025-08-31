@@ -4,6 +4,25 @@ spring:
     activate:
       on-profile: local
 
+  cloud:
+    stream:
+      defaultBinder: rabbit
+      bindings:
+        ticket-out-0:
+          destination: ticket.exchange
+          contentType: application/json
+      rabbit:
+        bindings:
+          ticket-out-0:
+            producer:
+              exchangeType: topic
+              routingKeyExpression: '''ticket.created'''
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:rabbitmq}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
+
   datasource:
     #    database: ticket_platform
     url: jdbc:mysql://localhost:3306/ticket_platform?serverTimezone=UTC
@@ -14,7 +33,7 @@ spring:
       port: 6379
 
 aws.dynamodb:
-    endPoint:  http://dynamodb:8000
-    region:     us-west-2
-    accessKey: id
-    accessPass: key
+  endPoint: http://dynamodb:8000
+  region: us-west-2
+  accessKey: id
+  accessPass: key

@@ -3,6 +3,11 @@ spring:
   config:
     activate:
       on-profile: local
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:rabbitmq}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
 
   datasource:
     #    database: ticket_platform
@@ -13,9 +18,4 @@ spring:
       host: localhost
       port: 6379
 
-aws.dynamodb:
-    endPoint:  http://dynamodb:8000
-    region:     us-west-2
-    accessKey: id
-    accessPass: key
 
