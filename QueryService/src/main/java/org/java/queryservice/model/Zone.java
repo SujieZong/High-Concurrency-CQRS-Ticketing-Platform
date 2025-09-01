@@ -14,7 +14,6 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Zone {
-	// Zone 1 - 100, zone 100 $20, prive doubles every 20 zones
 	@Id
 	@Column(name = "zone_id")
 	private int zoneId;
@@ -25,7 +24,7 @@ public class Zone {
 	private int colCount;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "venue_id") // 指定zone表中的外键列
-	@ToString.Exclude // 防止在toString()中出现循环引用导致堆栈溢出
+	@JoinColumn(name = "venue_id")
+	@ToString.Exclude
 	private Venue venue;
 }

@@ -2,6 +2,7 @@ package org.java.rabbitcombinedconsumer.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.java.rabbitcombinedconsumer.model.TicketStatus;
 
 import java.time.Instant;
 
@@ -14,6 +15,6 @@ public class MqDTO {
 	private int zoneId;
 	private String row;
 	private String column;
-	private String status;       // CREATED / PAID / CANCELLED
+	private TicketStatus status;       // CREATED / PAID / CANCELLED
 	private Instant createdOn;
 }
