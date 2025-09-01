@@ -1,24 +1,36 @@
-
+# ==============================
+# common（所有环境通用且安全）
+# ==============================
 spring:
   application:
     name: TicketingConsumer
   main:
     web-application-type: none
-
-  profiles:
-    active: local
-
   docker:
     compose:
       enabled: false
+  # 显式关闭 Redis 自动配置（除非你真的用到 Redis）
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
 
-  datasource:
-    username: root
-    password: Qweasd123
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    hikari:
-      minimum-idle: 400
-      maximum-pool-size: 2000
+logging:
+  file:
+    name: ./logs/ticketing-platform.log
+  level:
+    root: INFO
+    # 按你的包名调整，避免使用 purchase 的路径
+    org.java.rabbitcombinedconsumer: DEBUG
+
+# ==============================
+# local：本机直跑（IDE/命令行）
+# ==============================
+---
+spring:
+  config:
+    activate:
+      on-profile: local
 
   rabbitmq:
     host: localhost
@@ -26,46 +38,62 @@ spring:
     username: guest
     password: guest
 
-  data:
-    redis:
-      timeout: 5000
-      lettuce:
-        pool:
-          max-active: 8
-          max-wait: -1ms
-          max-idle: 8
-          min-idle: 0
+  datasource:
+    url: jdbc:mysql://localhost:3306/ticket_platform?serverTimezone=UTC
+    username: root
+    password: Qweasd123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      connection-timeout: 30000
 
-logging:
-  file:
-    name: ./logs/ticketing-platform.log
-  level:
-    root: INFO
-    org.java.ticketingplatform.service: DEBUG
-    org.java.ticketingplatform.service.SeatOccupiedRedisFacade: TRACE
-
+# ==============================
+# docker：Compose 内部互联（用服务名）
+# ==============================
 ---
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:rabbitmq}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
+
+  datasource:
+    url: jdbc:mysql://mysql:3306/ticket_platform?serverTimezone=UTC
+    username: root
+    password: Qweasd123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      connection-timeout: 30000
+
 # ==============================
-# prod
+# prod：按实际 RDS/Rabbit 替换，尽量用环境变量注入
 # ==============================
+---
 spring:
   config:
     activate:
       on-profile: prod
 
+  rabbitmq:
+    host: ${RABBIT_HOST}
+    port: ${RABBIT_PORT:5672}
+    username: ${RABBIT_USER}
+    password: ${RABBIT_PASS}
+
   datasource:
-    host: sqldatabase.ci2ohbo6xdho.us-west-2.rds.amazonaws.com
-    url: jdbc:mysql://${spring.datasource.host}:3306/ticket_platform?serverTimezone=UTC
-
-  data:
-    redis:
-      host: 172.31.44.126
-      port: 6379
-      password: yourStrongRedisPassword
-
-aws:
-  dynamodb:
-    region: us-west-2
-    end-point: http://172.31.39.232:8000
-    access-key: id
-    access-pass: key
+    url: jdbc:mysql://${DB_HOST}:3306/ticket_platform?serverTimezone=UTC
+    username: ${DB_USER}
+    password: ${DB_PASS}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimum-idle: 10
+      maximum-pool-size: 60
+      connection-timeout: 20000
