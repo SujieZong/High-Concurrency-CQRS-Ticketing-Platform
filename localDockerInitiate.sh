@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 
 echo "Stopping old dev containers…"
 docker rm -f dev-redis dev-rabbitmq dev-dynamodb \
            ticketing-platform rabbit-consumer 2>/dev/null || true
 
 echo "Starting all services via Docker Compose…"
+docker compose build --no-cache
 docker compose up --build -d
 
 echo "Waiting for DynamoDB Local to be ready…"

@@ -4,12 +4,12 @@ spring:
     activate:
       on-profile: docker
 
-  datasource:
-    url: jdbc:mysql://mysql:3306/ticket_platform?serverTimezone=UTC
-    username: root
-    password: Qweasd123
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    hikari:
-      minimum-idle: 5
-      maximum-pool-size: 20
-      connection-timeout: 30000
+#  datasource:
+#    url: jdbc:mysql://mysql:3306/ticket_platform?serverTimezone=UTC
+#    username: root
+#    password: Qweasd123
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    hikari:
+#      minimum-idle: 5
+#      maximum-pool-size: 20
+#      connection-timeout: 30000

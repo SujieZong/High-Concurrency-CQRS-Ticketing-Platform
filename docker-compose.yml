@@ -2,13 +2,16 @@
 services:
   redis:
     image: redis:7-alpine
-    container_name: dev-redis
     ports:
       - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "PING" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   rabbitmq:
     image: rabbitmq:3-management
-    container_name: dev-rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -23,11 +26,17 @@ services:
 
   dynamodb:
     image: amazon/dynamodb-local
-    container_name: dev-dynamodb
     ports:
       - "8000:8000"
-    command: ["-jar","DynamoDBLocal.jar","-sharedDb"] #share across regions
+    command: [ "-jar","DynamoDBLocal.jar","-sharedDb" ] #share across regions
     # could add volume here to make DynamoDB permanent
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8000 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+
 
   # —— API ——
   # —— Purchase Service —— Redis, Dynamo, Rabbit
@@ -36,16 +45,9 @@ services:
       context: ./PurchaseService
       dockerfile: Dockerfile
     image: purchase-service:latest
-    container_name: purchase-service
     ports:
       - "8080:8080"
-    depends_on:
-      redis:
-        condition: service_started
-      rabbitmq:
-        condition: service_healthy
-      dynamodb:
-        condition: service_started
+
     environment:
       SPRING_PROFILES_ACTIVE: docker
 
@@ -71,21 +73,51 @@ services:
       SPRING_DATASOURCE_PASSWORD: Qweasd123
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
 
+      # Hikar pool setting
+      SPRING_DS_MIN_IDLE: 5
+      SPRING_DS_MAX_POOL: 20
+      SPRING_DS_CONN_TIMEOUT: 30000
+
+    depends_on:
+      redis: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      dynamodb: { condition: service_healthy }
+
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
   # —— Query Service —— MySQL
   query-service:
     build:
       context: ./QueryService
       dockerfile: Dockerfile
     image: query-service:latest
-    container_name: query-service
     ports:
       - "8081:8080"
+
     environment:
+      # MySQL
       SPRING_PROFILES_ACTIVE: docker
 
       SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/ticket_platform?serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: Qweasd123
+
+      # Hikar pool setting
+      SPRING_DS_MIN_IDLE: 5
+      SPRING_DS_MAX_POOL: 20
+      SPRING_DS_CONN_TIMEOUT: 30000
+
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
 
   # —— Consumer —— MySQL, Rabbit
   rabbit-consumer:
@@ -94,9 +126,6 @@ services:
       dockerfile: Dockerfile
     image: rabbit-consumer:latest
     container_name: rabbit-consumer
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -111,3 +140,13 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/ticket_platform?serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: Qweasd123
+
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+      dynamodb: { condition: service_healthy }
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
