@@ -4,7 +4,14 @@ import jakarta.persistence.*;
 import lombok.Getter; import lombok.Setter;
 
 @Getter @Setter
-@Entity @Table(name = "outbox_events")
+@Entity
+@Table(
+		name = "outbox_events",
+		indexes = {
+				@Index(name = "idx_outbox_unsent", columnList = "sent, next_attempt_at"),
+				@Index(name = "idx_outbox_created", columnList = "created_at")
+		}
+)
 public class OutboxEvent {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,7 +21,7 @@ public class OutboxEvent {
 	private String eventType;
 
 	@Lob
-	@Column(nullable = false) // 若上面用 JSON，这里也可以是 String 字段
+	@Column(nullable = false)
 	private String payload;
 
 	@Column(nullable = false)

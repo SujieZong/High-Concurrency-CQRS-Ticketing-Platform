@@ -3,9 +3,13 @@ package org.java.purchaseservice.service.purchase;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.java.purchaseservice.dto.TicketPurchaseRequestDTO;
 import org.java.purchaseservice.exception.CreateTicketException;
 import org.java.purchaseservice.exception.SeatOccupiedException;
-import org.java.purchaseservice.repository.DynamoTicketDAOInterface;
+import org.java.purchaseservice.mapper.TicketMapper;
+import org.java.purchaseservice.model.TicketInfo;
+import org.java.purchaseservice.model.TicketStatus;
+import org.java.purchaseservice.repository.DynamoTicketDaoInterface;
 import org.java.purchaseservice.service.TicketPurchaseServiceInterface;
 import org.java.purchaseservice.service.outbox.OutboxService;
 import org.java.purchaseservice.service.redis.SeatOccupiedRedisFacade;
@@ -19,25 +23,26 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+//Service：统一生成 ticketId/createdOn，编排占座 → 写库 → 记 Outbox → 返回
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class TicketPurchaseService implements TicketPurchaseServiceInterface {
 
-	//	private final TicketMapper ticketMapper;
+	private final TicketMapper ticketMapper;
 	private final SeatOccupiedRedisFacade seatOccupiedRedisFacade;
 	private final OutboxService outboxService;
 	private final ObjectMapper objectMapper;
-	private final DynamoTicketDAOInterface dynamoTicketDao;
+	private final DynamoTicketDaoInterface dynamoTicketDao;
 
 	// transfer input data into a Response DTO object and save to Database through DAO and Mapper
 	@Override
 	@Transactional
-	public TicketRespondDTO purchaseTicket(TicketCreationDTO dto) {
+	public TicketRespondDTO purchaseTicket(TicketPurchaseRequestDTO dto) {
 		log.info("[TicketPurchaseService] purchaseTicket start: eventId={}, zone={}, row={}, col={}",
 				dto.getEventId(), dto.getZoneId(), dto.getRow(), dto.getColumn());
 
-		//Redis - Set Redis seat occupancy to a True - Lua script
+		//Part 1: Redis - Set Redis seat occupancy to a True - Lua script
 		try {
 			seatOccupiedRedisFacade.tryOccupySeat(
 					dto.getEventId(),
@@ -54,24 +59,33 @@ public class TicketPurchaseService implements TicketPurchaseServiceInterface {
 			throw e;
 		}
 
+		// -- Part 2 Generation UUID and time--
 		String ticketId = UUID.randomUUID().toString();
 		Instant now = Instant.now();
 
+		try {
+			// -- part 3 Write to DynamoDB -> construct DTO then write
+			TicketCreationDTO creation = TicketCreationDTO.builder()
+					.ticketId(ticketId)
+					.venueId(dto.getVenueId())
+					.eventId(dto.getEventId())
+					.zoneId(dto.getZoneId())
+					.row(dto.getRow())
+					.column(dto.getColumn())
+					.status(TicketStatus.PAID)
+					.createdOn(now)
+					.build();
 
-	try{
-		//Write to DynamoDB -> construct then write
-			TicketCreationDTO writeDto = new TicketCreationDTO();
-			writeDto.setId(ticketId);
-			writeDto.setVenueId(dto.getVenueId());
-			writeDto.setEventId(dto.getEventId());
-			writeDto.setZoneId(dto.getZoneId());
-			writeDto.setRow(dto.getRow());
-			writeDto.setColumn(dto.getColumn());
-			writeDto.setStatus((dto.getStatus() != null) ? dto.getStatus() : "PAID");
-			writeDto.setCreatedOn(now);
-			dynamoTicketDao.createTicket(writeDto);
+			//
+			TicketInfo entity = ticketMapper.toEntity(creation);
+			entity.setTicketId(ticketId);
+			entity.setStatus(creation.getStatus());
+			entity.setCreatedOn(now);
 
-			// for Outbox event recording
+			// -- Part 4 -- write into DynamoDB, Direct Write
+			dynamoTicketDao.createTicket(entity);
+
+			//-- Part 5 --  for Outbox event recording
 			Map<String, Object> event = new HashMap<>();
 			event.put("ticketId", ticketId);
 			event.put("venueId", dto.getVenueId());
@@ -79,7 +93,7 @@ public class TicketPurchaseService implements TicketPurchaseServiceInterface {
 			event.put("zoneId", dto.getZoneId());
 			event.put("row", dto.getRow());
 			event.put("column", dto.getColumn());
-			event.put("status", (dto.getStatus() != null) ? dto.getStatus() : "PAID");
+			event.put("status", creation.getStatus());
 			event.put("createdOn", now.toString());
 
 			//serialize and send to outbox
@@ -87,22 +101,18 @@ public class TicketPurchaseService implements TicketPurchaseServiceInterface {
 			outboxService.saveEvent("ticket.created", payload);
 
 			// direct return
-			return new TicketRespondDTO(
-					ticketId,
-					dto.getZoneId(),
-					dto.getRow(),
-					dto.getColumn(),
-					now
-			);
+			return ticketMapper.toRespondDto(entity);
 
 		} catch (Exception ex) {
-			// any error , release seat
+			// any error, release seat
 			safeReleaseSeat(dto, ticketId, ex);
 			throw new CreateTicketException("Failed to create ticket", ex);
 		}
 	}
 
-	private void safeReleaseSeat(TicketCreationDTO dto, String ticketId, Exception original) {
+
+	// Release seat from Redis
+	private void safeReleaseSeat(TicketPurchaseRequestDTO dto, String ticketId, Exception original) {
 		try {
 			seatOccupiedRedisFacade.releaseSeat(
 					dto.getEventId(),

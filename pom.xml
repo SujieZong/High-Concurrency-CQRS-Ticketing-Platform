@@ -7,9 +7,9 @@
 
     <modules>
 <!--        <module>TicketContracts</module>-->
-        <module>TicketingPlatform</module>
+        <module>PurchaseService</module>
         <module>RabbitCombinedConsumer</module>
-<!--        <module>QueryService</module>               &lt;!&ndash; 新建空壳，占位 &ndash;&gt;-->
+<!--        <module>QueryService</module>             -->
     </modules>
 
     <dependencyManagement>

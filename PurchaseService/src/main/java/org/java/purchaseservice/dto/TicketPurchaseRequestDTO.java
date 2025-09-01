@@ -4,6 +4,7 @@ import lombok.*;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class TicketPurchaseRequestDTO {
 	private String venueId;
 	private String eventId;

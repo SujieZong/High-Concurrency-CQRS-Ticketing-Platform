@@ -1,6 +1,7 @@
 package org.java.purchaseservice.dto;
 
 import lombok.*;
+import org.java.purchaseservice.model.TicketStatus;
 
 import java.time.Instant;
 
@@ -9,12 +10,12 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TicketCreationDTO {
-	private String id;
+	private String ticketId;
 	private String venueId;
 	private String eventId;
 	private int zoneId;
 	private String row;
 	private String column;
-	private String status; //"CREATED", "PAID", "CANCELLED"
+	private TicketStatus status; //"CREATED", "PAID", "CANCELLED"
 	private Instant createdOn;
 }
