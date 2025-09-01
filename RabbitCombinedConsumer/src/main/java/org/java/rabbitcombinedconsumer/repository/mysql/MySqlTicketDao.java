@@ -2,6 +2,7 @@ package org.java.rabbitcombinedconsumer.repository.mysql;
 
 import lombok.extern.slf4j.Slf4j;
 import org.java.rabbitcombinedconsumer.model.TicketInfo;
+import org.java.rabbitcombinedconsumer.model.TicketStatus;
 import org.java.rabbitcombinedconsumer.repository.MySqlTicketDAOInterface;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -24,12 +25,20 @@ public class MySqlTicketDao implements MySqlTicketDAOInterface {
 		String sql = """
 				  INSERT INTO ticket(
 				    ticket_id, venue_id, event_id,
-				    zone_id, row_label, col_label,
+				    zone_id, row_label, col_label, status,
 				    created_on
-				  ) VALUES(?,?,?,?,?,?,?)
+				  ) VALUES(?,?,?,?,?,?,?,?)
+				  ON DUPLICATE KEY UPDATE
+				    status = VALUES(status)
 				""";
 		try {
-			jdbcTemplate.update(sql, ticketInfo.getTicketId(), ticketInfo.getVenueId(), ticketInfo.getEventId(), ticketInfo.getZoneId(), ticketInfo.getRow(), ticketInfo.getColumn(), Timestamp.from(ticketInfo.getCreatedOn()));
+			jdbcTemplate.update(
+					sql,
+					ticketInfo.getTicketId(), ticketInfo.getVenueId(), ticketInfo.getEventId(),
+					ticketInfo.getZoneId(), ticketInfo.getRow(), ticketInfo.getColumn(),
+					(ticketInfo.getStatus() == null ? TicketStatus.PENDING_PAYMENT : ticketInfo.getStatus()).name(),
+					Timestamp.from(ticketInfo.getCreatedOn())
+			);
 			log.debug("[MySqlTicketDao] Successfully persisted ticket with id={}", ticketInfo.getTicketId());
 		} catch (DuplicateKeyException e) {
 			log.warn("[MySqlTicketDao] ticketId = {}, exists skip", ticketInfo.getTicketId());

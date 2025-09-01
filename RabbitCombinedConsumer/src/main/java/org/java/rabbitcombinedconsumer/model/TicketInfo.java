@@ -16,5 +16,6 @@ public class TicketInfo {
 	private int zoneId;
 	private String row;
 	private String column;
+	private TicketStatus status;
 	private Instant createdOn;
 }
