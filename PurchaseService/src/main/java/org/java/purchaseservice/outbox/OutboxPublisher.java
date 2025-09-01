@@ -1,6 +1,5 @@
 package org.java.purchaseservice.outbox;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.java.purchaseservice.domain.OutboxEvent;
@@ -14,8 +13,6 @@ import org.springframework.stereotype.Component;
 public class OutboxPublisher {
 	private final OutboxEventRepository repo;
 	private final StreamBridge streamBridge;
-//	private final ObjectMapper objectMapper;
-
 
 	@Scheduled(fixedDelay = 500) //every 0.5 second scan
 	@Transactional
