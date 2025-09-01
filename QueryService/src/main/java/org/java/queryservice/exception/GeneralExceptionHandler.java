@@ -2,6 +2,7 @@ package org.java.queryservice.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.support.ErrorMessage;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -38,4 +39,5 @@ public class GeneralExceptionHandler {
 		String errorMessage = "Seat Occupied: " + ex.getMessage();
 		return ResponseEntity.status(HttpStatus.CONFLICT).body("Redis Error--" + errorMessage);
 	}
+
 }

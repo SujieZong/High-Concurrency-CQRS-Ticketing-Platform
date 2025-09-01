@@ -16,6 +16,6 @@ public class MqDTO {
 	private int zoneId;
 	private String row;
 	private String column;
-	private TicketStatus status;       // CREATED / PAID / CANCELLED
 	private Instant createdOn;
+	private TicketStatus status;       // CREATED / PAID / CANCELLED
 }

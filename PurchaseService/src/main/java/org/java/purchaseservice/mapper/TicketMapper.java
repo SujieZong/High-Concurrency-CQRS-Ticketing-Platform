@@ -14,7 +14,7 @@ public interface TicketMapper {
 	@Mapping(target = "createdOn", ignore = true)
 	TicketInfo toEntity(TicketCreationDTO dto);
 
-	// Entity to DTO, parameter entrity return DTO
+	// Entity to DTO, parameter entity return DTO
 	TicketRespondDTO toRespondDto(TicketInfo entity);
 
 }

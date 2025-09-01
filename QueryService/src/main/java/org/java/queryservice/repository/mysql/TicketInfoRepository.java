@@ -13,11 +13,11 @@ public interface TicketInfoRepository extends JpaRepository<TicketInfo, String> 
 
 	int countByEventId(String eventId);
 
-	@Query("""
-            SELECT SUM(z.ticketPrice)
-            FROM TicketInfo t JOIN Zone z ON t.zoneId = z.zoneId
-            WHERE t.venueId = :venueId AND t.eventId = :eventId
-            """)
+	@Query(value = """
+			select coalesce(sum(z.ticket_price), 0)
+			from ticket t
+					join zone z on z.zone_id = t.zone_id
+			where t.venue_id = :venueId and t.event_id = :eventId
+			""", nativeQuery = true)
 	BigDecimal sumRevenueByVenueAndEvent(@Param("venueId") String venueId, @Param("eventId") String eventId);
-
 }
