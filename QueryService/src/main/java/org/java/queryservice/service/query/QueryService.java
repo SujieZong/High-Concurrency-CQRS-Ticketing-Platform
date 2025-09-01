@@ -19,6 +19,7 @@ public class QueryService implements QueryServiceInterface {
 	private final TicketInfoRepository ticketInfoRepository;
 	private final TicketMapper tickerMapper;
 
+	// find ticket by ID
 	@Override
 	@Transactional(readOnly = true)
 	public TicketInfoDTO getTicket(String ticketId) {

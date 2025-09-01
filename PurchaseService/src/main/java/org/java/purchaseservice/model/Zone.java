@@ -25,7 +25,7 @@ public class Zone {
 	private int colCount;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "venue_id") // 指定zone表中的外键列
-	@ToString.Exclude // 防止在toString()中出现循环引用导致堆栈溢出
+	@JoinColumn(name = "venue_id")
+	@ToString.Exclude
 	private Venue venue;
 }
