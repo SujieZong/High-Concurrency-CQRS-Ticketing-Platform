@@ -1,5 +1,5 @@
 # ==============================
-# common（所有环境通用）
+# common
 # ==============================
 spring:
   application:
@@ -15,6 +15,7 @@ spring:
     stream:
       defaultBinder: rabbit
       bindings:
+        #Sender bind channel
         ticket-out-0:
           destination: ticket.exchange
           contentType: application/json
@@ -24,6 +25,7 @@ spring:
             producer:
               exchangeType: topic
               routingKeyExpression: '''ticket.created'''
+              declareExchange: true
 
 logging:
   file:

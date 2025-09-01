@@ -30,7 +30,7 @@ services:
     # could add volume here to make DynamoDB permanent
 
   # —— API ——
-  # —— Purchase Service ——
+  # —— Purchase Service —— Redis, Dynamo, Rabbit
   purchase-service:
     build:
       context: ./PurchaseService
@@ -71,7 +71,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: Qweasd123
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
 
-  # —— Query Service ——
+  # —— Query Service —— MySQL
   query-service:
     build:
       context: ./QueryService
@@ -87,7 +87,7 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: Qweasd123
 
-  # —— Consumer ——
+  # —— Consumer —— MySQL, Rabbit
   rabbit-consumer:
     build:
       context: ./RabbitCombinedConsumer
@@ -97,8 +97,7 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-#      dynamodb:
-#        condition: service_started
+
     environment:
       SPRING_PROFILES_ACTIVE: docker
 
@@ -112,9 +111,3 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/ticket_platform?serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: Qweasd123
-
-#      # DynamoDB Local
-#      AWS_DYNAMODB_END_POINT: http://dynamodb:8000
-#      AWS_DYNAMODB_REGION: us-west-2
-#      AWS_DYNAMODB_ACCESS_KEY: id
-#      AWS_DYNAMODB_ACCESS_PASS: key
