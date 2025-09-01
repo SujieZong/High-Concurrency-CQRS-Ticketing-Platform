@@ -1,33 +1,74 @@
-
+# ==============================
+# common（所有环境通用）
+# ==============================
 spring:
   application:
-    name: Purchase Service
+    name: PurchaseService
   main:
     web-application-type: servlet
-
-  profiles:
-    active: local
-
   docker:
     compose:
       enabled: false
+  jpa:
+    open-in-view: false
+  cloud:
+    stream:
+      defaultBinder: rabbit
+      bindings:
+        ticket-out-0:
+          destination: ticket.exchange
+          contentType: application/json
+      rabbit:
+        bindings:
+          ticket-out-0:
+            producer:
+              exchangeType: topic
+              routingKeyExpression: '''ticket.created'''
 
+logging:
+  file:
+    name: ./logs/purchase-service.log
+  level:
+    root: INFO
+    org.java.purchaseservice: DEBUG
+
+# 启动期是否向 Redis 预热场馆/座区（本地调试可关）
+tickets:
+  bootstrap:
+    venue-redis: ${TICKETS_BOOTSTRAP_VENUE_REDIS:true}
+
+# ==============================
+# docker：所有依赖（Rabbit/Redis/DynamoDB）在 Docker 中
+#       容器与容器用服务名互联
+# ==============================
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  # MySQL 不在 Docker，而是在宿主机：保持 host.docker.internal
+  # 如果后续把 MySQL 也放进 compose，请改成 jdbc:mysql://mysql:3306/ticket_platform?serverTimezone=UTC
   datasource:
-    username: root
-    password: Qweasd123
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://host.docker.internal:3306/ticket_platform?serverTimezone=UTC}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:Qweasd123}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
-      minimum-idle: 400
-      maximum-pool-size: 2000
+      minimum-idle: 5
+      maximum-pool-size: 20
+      connection-timeout: 30000
 
   rabbitmq:
-    host: 172.31.20.96
-    port: 5672
-    username: guest
-    password: guest
+    host: ${SPRING_RABBITMQ_HOST:rabbitmq}     # docker 服务名（compose 中已提供）
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
 
   data:
     redis:
+      host: ${SPRING_DATA_REDIS_HOST:redis}    # docker 服务名（compose 中已提供）
+      port: ${SPRING_DATA_REDIS_PORT:6379}
       timeout: 5000
       lettuce:
         pool:
@@ -36,36 +77,48 @@ spring:
           max-idle: 8
           min-idle: 0
 
-logging:
-  file:
-    name: ./logs/ticketing-platform.log
-  level:
-    root: INFO
-    org.java.ticketingplatform.service: DEBUG
-    org.java.ticketingplatform.service.org.java.ticketingplatform.service.redis.SeatOccupiedRedisFacade: TRACE
+aws:
+  dynamodb:
+    region: ${AWS_DYNAMODB_REGION:us-west-2}
+    end-point: ${AWS_DYNAMODB_END_POINT:http://dynamodb:8000}  # docker 服务名（compose 中已提供）
+    access-key: ${AWS_DYNAMODB_ACCESS_KEY:id}
+    access-pass: ${AWS_DYNAMODB_ACCESS_PASS:key}
 
+# ==============================
+# prod：示例（用环境变量注入）
+# ==============================
 ---
-# ==============================
-# prod
-# ==============================
 spring:
   config:
     activate:
       on-profile: prod
 
   datasource:
-    host: sqldatabase.ci2ohbo6xdho.us-west-2.rds.amazonaws.com
-    url: jdbc:mysql://${spring.datasource.host}:3306/ticket_platform?serverTimezone=UTC
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/ticket_platform?serverTimezone=UTC
+    username: ${DB_USER}
+    password: ${DB_PASS}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimum-idle: 10
+      maximum-pool-size: 60
+      connection-timeout: 20000
+
+  rabbitmq:
+    host: ${RABBIT_HOST}
+    port: ${RABBIT_PORT:5672}
+    username: ${RABBIT_USER}
+    password: ${RABBIT_PASS}
 
   data:
     redis:
-      host: 172.31.44.126
-      port: 6379
-      password: Qweasd123
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASS:}
+      timeout: 5000
 
 aws:
   dynamodb:
-    region: us-west-2
-    end-point: http://172.31.39.232:8000
-    access-key: id
-    access-pass: key
+    region: ${AWS_DYNAMODB_REGION:us-west-2}
+    end-point: ${AWS_DYNAMODB_END_POINT:http://172.31.39.232:8000}  # 若改用托管 DynamoDB，请换官方 endpoint 并移除端口
+    access-key: ${AWS_ACCESS_KEY_ID:id}
+    access-pass: ${AWS_SECRET_ACCESS_KEY:key}
