@@ -1,0 +1,23 @@
+# prod：AWS setting configuration or other prod service
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+#  datasource:
+#    url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/ticket_platform?serverTimezone=UTC
+#    username: ${DB_USER}
+#    password: ${DB_PASS}
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    hikari:
+#      minimum-idle: 10
+#      maximum-pool-size: 60
+#      connection-timeout: 20000
+##
+#aws:
+#  dynamodb:
+#    region: ${AWS_DYNAMODB_REGION:us-west-2}
+#    end-point: ${AWS_DYNAMODB_END_POINT:http://172.31.39.232:8000}  # 若改用托管 DynamoDB，请换官方 endpoint 并移除端口
+#    access-key: ${AWS_ACCESS_KEY_ID:id}
+#    access-pass: ${AWS_SECRET_ACCESS_KEY:key}

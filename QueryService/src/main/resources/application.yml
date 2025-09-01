@@ -1,18 +1,24 @@
-# ==============================
-# common
-# ==============================
+# common setting
+
 spring:
   application:
     name: QueryService
   main:
     web-application-type: servlet
-  docker:
-    compose:
-      enabled: false
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: none   # 读侧建议由迁移脚本维护，避免意外改表
+      ddl-auto: none
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimum-idle: ${SPRING_DS_MIN_IDLE:5}
+      maximum-pool-size: ${SPRING_DS_MAX_POOL:20}
+      connection-timeout: ${SPRING_DS_CONN_TIMEOUT:30000}
 
 logging:
   file:
@@ -20,60 +26,3 @@ logging:
   level:
     root: INFO
     org.java.queryservice: DEBUG
-
-# ==============================
-# local：
-# ==============================
----
-spring:
-  config:
-    activate:
-      on-profile: local
-
-  datasource:
-    url: jdbc:mysql://localhost:3306/ticket_platform?serverTimezone=UTC
-    username: root
-    password: Qweasd123
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    hikari:
-      minimum-idle: 5
-      maximum-pool-size: 20
-      connection-timeout: 30000
-
-# ==============================
-# docker：Compose
-# ==============================
----
-spring:
-  config:
-    activate:
-      on-profile: docker
-
-  datasource:
-    url: jdbc:mysql://mysql:3306/ticket_platform?serverTimezone=UTC
-    username: root
-    password: Qweasd123
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    hikari:
-      minimum-idle: 5
-      maximum-pool-size: 20
-      connection-timeout: 30000
-
-# ==============================
-# prod：RDS
-# ==============================
----
-spring:
-  config:
-    activate:
-      on-profile: prod
-
-  datasource:
-    url: jdbc:mysql://<rds-host>:3306/ticket_platform?serverTimezone=UTC
-    username: <prod_user>
-    password: <prod_pass>
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    hikari:
-      minimum-idle: 10
-      maximum-pool-size: 60
-      connection-timeout: 20000

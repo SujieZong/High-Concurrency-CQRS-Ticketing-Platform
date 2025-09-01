@@ -1,0 +1,6 @@
+# for local Docker testing
+
+spring:
+  config:
+    activate:
+      on-profile: docker

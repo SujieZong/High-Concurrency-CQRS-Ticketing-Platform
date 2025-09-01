@@ -4,7 +4,7 @@ spring:
     name: TicketingConsumer
 
   main:
-    web-application-type: none
+    web-application-type: servlet
   docker:
     compose:
       enabled: false
@@ -31,6 +31,16 @@ spring:
               autoBindDlq: true
               republishToDlq: true
 
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimum-idle: ${SPRING_DS_MIN_IDLE:5}
+      maximum-pool-size: ${SPRING_DS_MAX_POOL:20}
+      connection-timeout: ${SPRING_DS_CONN_TIMEOUT:30000}
+
   rabbitmq:
     host: ${SPRING_RABBITMQ_HOST}
     port: ${SPRING_RABBITMQ_PORT:5672}
@@ -44,3 +54,12 @@ logging:
     root: INFO
     org.java.rabbitcombinedconsumer: DEBUG
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true

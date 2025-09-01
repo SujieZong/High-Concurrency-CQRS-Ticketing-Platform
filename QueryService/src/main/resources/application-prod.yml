@@ -1,0 +1,6 @@
+# prod：AWS setting configuration or other prod service
+
+spring:
+  config:
+    activate:
+      on-profile: prod

@@ -5,11 +5,15 @@ spring:
       on-profile: prod
 
   datasource:
-    url: jdbc:mysql://${DB_HOST}:3306/ticket_platform?serverTimezone=UTC
-    username: ${DB_USER}
-    password: ${DB_PASS}
-    driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
-      minimum-idle: 10
       maximum-pool-size: 60
       connection-timeout: 20000
+#  datasource:
+#    url: jdbc:mysql://${DB_HOST}:3306/ticket_platform?serverTimezone=UTC
+#    username: ${DB_USER}
+#    password: ${DB_PASS}
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    hikari:
+#      minimum-idle: 10
+#      maximum-pool-size: 60
+#      connection-timeout: 20000
