@@ -37,8 +37,6 @@ public class OutboxEvent {
 
 	@org.hibernate.annotations.UpdateTimestamp
 	private java.sql.Timestamp updatedAt;
-
-
 }
 
 

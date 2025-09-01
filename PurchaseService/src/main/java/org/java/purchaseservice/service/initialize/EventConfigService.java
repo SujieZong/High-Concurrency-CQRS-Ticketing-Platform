@@ -6,6 +6,9 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
+
+//Initialize all zones through SeatOccupiedService's initializeAllZonesForEvent Function
+//
 @Component
 @RequiredArgsConstructor
 public class EventConfigService implements ApplicationRunner {

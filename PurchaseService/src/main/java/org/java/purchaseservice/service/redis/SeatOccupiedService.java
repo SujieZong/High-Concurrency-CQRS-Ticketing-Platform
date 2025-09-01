@@ -18,6 +18,7 @@ public class SeatOccupiedService {
 	private final VenueConfigService venueConfigService;
 
 	public void initializeAllZonesForEvent(String eventId, String venueId) {
+		//
 		Set<Object> zoneIds = venueConfigService.getVenueZones(venueId);
 		if (zoneIds == null || zoneIds.isEmpty()) {
 			throw new IllegalStateException("Venue " + venueId + " has no configured zones.");

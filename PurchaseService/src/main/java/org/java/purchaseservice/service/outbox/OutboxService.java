@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class OutboxService {
+// save traction to outbox
 
 	private final OutboxEventRepository repo;
 

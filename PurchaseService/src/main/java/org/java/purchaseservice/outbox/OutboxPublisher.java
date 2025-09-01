@@ -21,14 +21,17 @@ public class OutboxPublisher {
 
 		for (OutboxEvent e : batch) {
 			try {
+				//send the message with Stream service
 				var message = org.springframework.messaging.support.MessageBuilder
 						.withPayload(e.getPayload()) // String/JSON
 						.build();
 
+				// If ok, send the message
 				boolean ok = streamBridge.send("ticket-out-0", message);
+				// Else catch, attempts ++
 				if (!ok) throw new IllegalStateException("stream send failed");
 
-				e.setSent(true);
+				e.setSent(true); //update var sent to True if Success
 				e.setAttempts(e.getAttempts() + 1);
 				repo.save(e);
 			} catch (Exception ex) {
