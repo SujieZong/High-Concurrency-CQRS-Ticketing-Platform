@@ -21,8 +21,8 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="High-Concurrency-CQRS-Ticketing-Platform" target="1.5" />
       <module name="TicketContracts" target="1.8" />
-      <module name="ticketing-parent" target="1.5" />
       <module name="TicketingPlatform" target="17" />
     </bytecodeTargetLevel>
   </component>
