@@ -32,12 +32,11 @@ public class TicketInfo {
 	@Column(name = "col_label")
 	private String column;
 
-	// have restrictions on changing this date
-	@Column(name = "created_on", nullable = false, updatable = false)
-	private Instant createdOn;
-
-	@Column(name = "status", nullable = false)
+	@Column(name = "status", nullable = false, length = 16)
 	@Enumerated(EnumType.STRING)
 	private TicketStatus status;
 
+	// have restrictions on changing this date
+	@Column(name = "created_on", nullable = false, updatable = false)
+	private Instant createdOn;
 }

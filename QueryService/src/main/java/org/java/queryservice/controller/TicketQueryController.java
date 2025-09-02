@@ -25,19 +25,18 @@ public class TicketQueryController {
 
 
 	@GetMapping("/{ticketId}")
-	public ResponseEntity<?> getTicket(@PathVariable String ticketId) {
+	public ResponseEntity<?> getTicket(@PathVariable("ticketId") String ticketId) {
 		try {
 			TicketInfoDTO ticketInfoDTO = queryService.getTicket(ticketId);
 			return ResponseEntity.ok(ticketInfoDTO);
 		} catch (TicketNotFoundException e) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND)
-					.body(new ErrorMessage("TicketID not found: " + ticketId));
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorMessage("TicketID not found: " + ticketId));
 		}
 	}
 
 
 	@GetMapping("/count/{eventId}")
-	public ResponseEntity<String> countSoldByEvent(@PathVariable String eventId) {
+	public ResponseEntity<String> countSoldByEvent(@PathVariable("eventId") String eventId) {
 		int count = queryService.countTicketSoldByEvent(eventId);
 		String message = String.format("Tickets sold for event %s is %d", eventId, count);
 
@@ -46,11 +45,10 @@ public class TicketQueryController {
 
 	@GetMapping("/money/{venueId}/{eventId}")
 	public ResponseEntity<String> moneyByEvent(
-			@PathVariable String venueId, @PathVariable String eventId) {
+			@PathVariable("venueId") String venueId,
+			@PathVariable("eventId") String eventId) {
 		BigDecimal revenue = queryService.sumRevenueByVenueAndEvent(venueId, eventId);
-		String message = String.format(
-				"Tickets sold for event %s in venue %s generated revenue %s",
-				eventId, venueId, revenue);
+		String message = String.format("Tickets sold for event %s in venue %s generated revenue %s", eventId, venueId, revenue);
 
 		return ResponseEntity.status(HttpStatus.OK).body(message);
 	}
