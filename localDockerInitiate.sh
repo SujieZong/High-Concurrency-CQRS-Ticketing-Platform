@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+echo "Building project with Maven…"
+mvn -T1C clean package -DskipTests
+
 echo "Stopping old dev containers…"
 docker rm -f dev-redis dev-rabbitmq dev-dynamodb \
            ticketing-platform rabbit-consumer 2>/dev/null || true

@@ -1,12 +1,11 @@
 package org.java.purchaseservice.service.redis;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.java.purchaseservice.exception.RowFullException;
 import org.java.purchaseservice.exception.SeatOccupiedException;
 import org.java.purchaseservice.exception.ZoneFullException;
 import org.java.purchaseservice.service.initialize.VenueConfigService;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
@@ -15,13 +14,24 @@ import java.util.List;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class SeatOccupiedRedisFacade {
-	private final RedisTemplate<String, Object> redisTemplate;
+
+	private final StringRedisTemplate stringRedisTemplate;
 	private final VenueConfigService venueConfigService;
+
 	private final DefaultRedisScript<Long> tryOccupySeatScript;
 	private final DefaultRedisScript<Long> tryReleaseSeatScript;
-	private final StringRedisTemplate stringRedisTemplate;
+
+	public SeatOccupiedRedisFacade(
+			StringRedisTemplate stringRedisTemplate,
+			VenueConfigService venueConfigService,
+			@Qualifier("tryOccupySeatScript") DefaultRedisScript<Long> tryOccupySeatScript,
+			@Qualifier("tryReleaseSeatScript") DefaultRedisScript<Long> tryReleaseSeatScript) {
+		this.stringRedisTemplate = stringRedisTemplate;
+		this.venueConfigService = venueConfigService;
+		this.tryOccupySeatScript = tryOccupySeatScript;
+		this.tryReleaseSeatScript = tryReleaseSeatScript;
+	}
 
 	/**
 	 * Check row && zone full
@@ -55,9 +65,8 @@ public class SeatOccupiedRedisFacade {
 			log.error("""
 							[SeatOccupiedRedisFacade] !!! Lua script execution FAILED !!!
 							  KEYS = [{}, {}, {}]
-							  ARGV = [{}]
-							  Exception: {}""",
-					bitmapKey, zoneRemainKey, rowRemainKey, bitPos, ex.toString(), ex);
+							  ARGV = {}""",
+					bitmapKey, zoneRemainKey, rowRemainKey, bitPos, ex);
 			throw ex;
 		}
 

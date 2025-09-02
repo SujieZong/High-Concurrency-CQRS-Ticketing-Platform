@@ -9,12 +9,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class GeneralExceptionHandler {
 
-	public ResponseEntity<String> handleTicketException(CreateTicketException ex){
-		String errorMessage = ex.getMessage();
-		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
-	}
-
-
 	@ExceptionHandler(MissingServletRequestParameterException.class)
 	public ResponseEntity<String> handleMissingParameter(MissingServletRequestParameterException ex) {
 		String name = ex.getParameterName();
