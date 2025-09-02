@@ -1,5 +1,39 @@
-.idea
-.vscode
+# ===== IDE / Editors =====
+.idea/
+*.iml
+.vscode/
+
+# ===== Build outputs =====
+target/
+**/target/
+build/
+out/
+logs/
+**/logs/
+*.log
+
+# ===== OS cruft =====
+.DS_Store
+Thumbs.db
+
+# ===== Java / Maven noise =====
+.mvn/wrapper/maven-wrapper.jar
+**/.classpath
+**/.project
+**/.settings/
+
+# ===== Docker / Compose artifacts (可根据需要调整) =====
+**/.env
+**/*.env
+**/.docker/
+**/.dockerignore
+
+# ===== Project-specific files =====
 Use Redis to Avoid Ticket Collision - Ticketing Platform.pdf
 Final Project - Ticketing System - Zeyu Li.pdf
-ContractsFoundation.iml
+
+# If you keep empty dirs like logs/, add a placeholder
+# logs/.gitkeep
+TicketContracts/.idea/workspace.xml
+RabbitCombinedConsumer/HELP.md
+.idea/compiler.xml
