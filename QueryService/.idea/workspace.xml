@@ -5,30 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ad43b08c-8d8f-4006-8ec9-8dece01d310c" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../.mvn/wrapper/MavenWrapperDownloader.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../.mvn/wrapper/maven-wrapper.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../mvnw" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../mvnw.cmd" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../.env" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../PurchaseService/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../PurchaseService/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../PurchaseService/src/main/java/org/java/purchaseservice/config/RedisLuaConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/../PurchaseService/src/main/java/org/java/purchaseservice/config/RedisLuaConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../PurchaseService/src/main/java/org/java/purchaseservice/exception/GeneralExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/../PurchaseService/src/main/java/org/java/purchaseservice/exception/GeneralExceptionHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../PurchaseService/src/main/java/org/java/purchaseservice/service/redis/SeatOccupiedRedisFacade.java" beforeDir="false" afterPath="$PROJECT_DIR$/../PurchaseService/src/main/java/org/java/purchaseservice/service/redis/SeatOccupiedRedisFacade.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../PurchaseService/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../PurchaseService/src/main/resources/application.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/java/queryservice/controller/TicketQueryController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/java/queryservice/controller/TicketQueryController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/java/queryservice/model/TicketInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/java/queryservice/model/TicketInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../RabbitCombinedConsumer/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../RabbitCombinedConsumer/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../RabbitCombinedConsumer/src/main/java/org/java/rabbitcombinedconsumer/config/RabbitFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/../RabbitCombinedConsumer/src/main/java/org/java/rabbitcombinedconsumer/config/RabbitFactory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../RabbitCombinedConsumer/src/main/java/org/java/rabbitcombinedconsumer/dto/MqDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/../RabbitCombinedConsumer/src/main/java/org/java/rabbitcombinedconsumer/dto/MqDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../RabbitCombinedConsumer/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../RabbitCombinedConsumer/src/main/resources/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../RabbitCombinedConsumer/src/test/java/org/java/rabbitcombinedconsumer/service/rabbitmq/RabbitMySqlConsumerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/../RabbitCombinedConsumer/src/test/java/org/java/rabbitcombinedconsumer/service/rabbitmq/RabbitMySqlConsumerTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../localDockerInitiate.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../localDockerInitiate.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../target/effective-pom.xml" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,22 +47,22 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/james/Desktop/0_NEU_CSA/CS6650_DIstributed_system/FinalProject/High-Concurrency-CQRS-Ticketing-Platform/QueryService&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;org.infernus.idea.checkstyle.CheckStyleConfigurable&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "feat/parent-pom",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/james/Desktop/0_NEU_CSA/CS6650_DIstributed_system/FinalProject/High-Concurrency-CQRS-Ticketing-Platform/QueryService",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "org.infernus.idea.checkstyle.CheckStyleConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/main/java/org/java/queryservice" />

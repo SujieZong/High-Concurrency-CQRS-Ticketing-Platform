@@ -4,11 +4,6 @@ services:
     image: redis:7-alpine
     ports:
       - "6379:6379"
-#    healthcheck:
-#      test: [ "CMD", "redis-cli", "PING" ]
-#      interval: 5s
-#      timeout: 3s
-#      retries: 10
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -18,24 +13,13 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
-#    healthcheck:
-#      test: [ "CMD", "rabbitmqctl", "status" ]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 5
 
   dynamodb:
     image: amazon/dynamodb-local
     ports:
       - "8000:8000"
     command: [ "-jar","DynamoDBLocal.jar","-sharedDb" ] #share across regions
-    # could add volume here to make DynamoDB permanent
-#    healthcheck:
-#      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8000 || exit 1" ]
-#      interval: 5s
-#      timeout: 3s
-#      retries: 30
-#      start_period: 10s
+
 
   # —— API ——
   # —— Purchase Service —— Redis, Dynamo, Rabbit
@@ -83,18 +67,6 @@ services:
       MANAGEMENT_HEALTH_READINESS_ENABLED: "true"
       MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: "always"
 
-#    depends_on:
-#      redis: { condition: service_healthy }
-#      rabbitmq: { condition: service_healthy }
-#      dynamodb: { condition: service_healthy }
-#
-#    healthcheck:
-#      test: [ "CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health/readiness | grep -q '\"status\":\"UP\"'" ]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 10
-#      start_period: 40s
-
 
   # —— Query Service —— MySQL
   query-service:
@@ -123,14 +95,6 @@ services:
       SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: 20
       SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT: 30000
 
-#    healthcheck:
-#      test: [ "CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health/readiness | grep -q '\"status\":\"UP\"'" ]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 10
-#      start_period: 40s
-
-
 
   # —— Consumer —— MySQL, Rabbit
   rabbit-consumer:
@@ -158,11 +122,3 @@ services:
       MANAGEMENT_HEALTH_LIVENESSSTATE_ENABLED: "true"
       MANAGEMENT_HEALTH_READINESSSTATE_ENABLED: "true"
 
-#    depends_on:
-#      rabbitmq: { condition: service_healthy }
-#    healthcheck:
-#      test: [ "CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health/readiness | grep -q '\"status\":\"UP\"'" ]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 10
-#      start_period: 40s
