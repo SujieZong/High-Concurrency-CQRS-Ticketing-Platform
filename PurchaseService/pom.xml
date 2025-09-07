@@ -60,7 +60,14 @@
             <artifactId>spring-cloud-stream-binder-kafka</artifactId>
         </dependency>
 
-
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-stream-binder-rabbit</artifactId>
+        </dependency>
         <!-- DynamoDB AWS SDK Setting-->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>

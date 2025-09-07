@@ -1,7 +1,6 @@
 package org.java.purchaseservice;
 
 import org.java.purchaseservice.domain.OutboxEvent;
-import org.java.purchaseservice.repository.OutboxEventRepository;
 import org.java.purchaseservice.service.outbox.OutboxService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

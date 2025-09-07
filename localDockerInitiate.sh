@@ -25,6 +25,7 @@ aws dynamodb create-table \
   --endpoint-url http://localhost:8000 \
   --region us-west-2
 
+# ==== OutboxEvent：主键 id + GSI(sent, createdAt) ====
 echo "Creating DynamoDB table 'OutboxEvent' (if not exists)…"
 aws dynamodb list-tables \
   --endpoint-url http://localhost:8000 \
@@ -32,8 +33,21 @@ aws dynamodb list-tables \
 | grep -q '"OutboxEvent"' || \
 aws dynamodb create-table \
   --table-name OutboxEvent \
-  --attribute-definitions AttributeName=id,AttributeType=S \
+  --attribute-definitions \
+      AttributeName=id,AttributeType=S \
+      AttributeName=sent,AttributeType=N \
+      AttributeName=createdAt,AttributeType=S \
   --key-schema AttributeName=id,KeyType=HASH \
+  --global-secondary-indexes '[
+    {
+      "IndexName": "gsi_sent_createdAt",
+      "KeySchema": [
+        {"AttributeName": "sent", "KeyType": "HASH"},
+        {"AttributeName": "createdAt", "KeyType": "RANGE"}
+      ],
+      "Projection": {"ProjectionType": "ALL"}
+    }
+  ]' \
   --billing-mode PAY_PER_REQUEST \
   --endpoint-url http://localhost:8000 \
   --region us-west-2
@@ -41,8 +55,13 @@ aws dynamodb create-table \
 
 echo "Verifying table creation…"
 aws dynamodb describe-table \
-  --table-name Tickets \
+  --table-name "${TABLE_TICKETS}" \
   --endpoint-url http://localhost:8000 \
-  --region us-west-2
+  --region us-west-2 >/dev/null
+
+aws dynamodb describe-table \
+  --table-name OutboxEvent \
+  --endpoint-url http://localhost:8000 \
+  --region us-west-2 >/dev/null
 
 echo "All containers are up!"

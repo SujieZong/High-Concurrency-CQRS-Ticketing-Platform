@@ -3,7 +3,6 @@ package org.java.purchaseservice.service.outbox;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.java.purchaseservice.domain.OutboxEvent;
-import org.java.purchaseservice.repository.OutboxEventRepository;
 import org.springframework.stereotype.Service;
 
 @Service

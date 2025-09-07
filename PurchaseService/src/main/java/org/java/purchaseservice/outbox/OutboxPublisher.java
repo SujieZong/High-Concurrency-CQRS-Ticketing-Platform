@@ -2,12 +2,13 @@ package org.java.purchaseservice.outbox;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.java.purchaseservice.domain.OutboxEvent;
-import org.java.purchaseservice.repository.OutboxEventRepository;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class OutboxPublisher {
@@ -15,7 +16,6 @@ public class OutboxPublisher {
 	private final StreamBridge streamBridge;
 
 	@Scheduled(fixedDelay = 500) //every 0.5 second scan
-	@Transactional
 	public void flush() {
 		var batch = repo.findTop50BySentFalseOrderByIdAsc();
 
