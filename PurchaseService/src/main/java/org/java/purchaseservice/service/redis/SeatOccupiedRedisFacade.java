@@ -15,20 +15,19 @@ import java.util.List;
 @Service
 @Slf4j
 public class SeatOccupiedRedisFacade {
-
-	private final StringRedisTemplate stringRedisTemplate;
 	private final VenueConfigService venueConfigService;
-
-	private final DefaultRedisScript<Long> tryOccupySeatScript;
-	private final DefaultRedisScript<Long> tryReleaseSeatScript;
+	private final DefaultRedisScript<Long> tryOccupySeatScript; //load lua script method
+	private final DefaultRedisScript<Long> tryReleaseSeatScript; //load lua script method
+	private final StringRedisTemplate stringRedisTemplate;
 
 	public SeatOccupiedRedisFacade(
-			StringRedisTemplate stringRedisTemplate,
 			VenueConfigService venueConfigService,
+			StringRedisTemplate stringRedisTemplate,
 			@Qualifier("tryOccupySeatScript") DefaultRedisScript<Long> tryOccupySeatScript,
-			@Qualifier("tryReleaseSeatScript") DefaultRedisScript<Long> tryReleaseSeatScript) {
-		this.stringRedisTemplate = stringRedisTemplate;
+			@Qualifier("tryReleaseSeatScript") DefaultRedisScript<Long> tryReleaseSeatScript
+	) {
 		this.venueConfigService = venueConfigService;
+		this.stringRedisTemplate = stringRedisTemplate;
 		this.tryOccupySeatScript = tryOccupySeatScript;
 		this.tryReleaseSeatScript = tryReleaseSeatScript;
 	}
@@ -65,8 +64,9 @@ public class SeatOccupiedRedisFacade {
 			log.error("""
 							[SeatOccupiedRedisFacade] !!! Lua script execution FAILED !!!
 							  KEYS = [{}, {}, {}]
-							  ARGV = {}""",
-					bitmapKey, zoneRemainKey, rowRemainKey, bitPos, ex);
+							  ARGV = [{}]
+							  Exception: {}""",
+					bitmapKey, zoneRemainKey, rowRemainKey, bitPos, ex.toString(), ex);
 			throw ex;
 		}
 
