@@ -1,7 +1,6 @@
 package org.java.purchaseservice.outbox;
 
 import lombok.RequiredArgsConstructor;
-import org.java.purchaseservice.domain.OutboxEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.enhanced.dynamodb.*;
@@ -51,12 +50,12 @@ public class OutboxRepository {
 	 */
 	public PageIterable<OutboxEvent> queryUnsent(int pageSize) {
 		var idx = table().index(GSI_SENT_CREATED_AT);
-		var sdkIterable = idx.query(r -> r
+		var builder = QueryEnhancedRequest.builder()
 				.queryConditional(QueryConditional.keyEqualTo(Key.builder().partitionValue(0).build()))
 				.limit(pageSize)
-				.scanIndexForward(true)
-		);
-		return PageIterable.create(sdkIterable);
+				.scanIndexForward(true);
+
+		return PageIterable.create(idx.query(builder.build()));
 	}
 
 	/**
@@ -98,5 +97,16 @@ public class OutboxRepository {
 		item.setUpdatedAt(Instant.now());
 
 		table().updateItem(item);
+	}
+
+	public boolean markDead(String id, Instant time) {
+		var key = Key.builder().partitionValue(id).build();
+		var current = table().getItem(r -> r.key(key));
+		if (current == null || current.getSent() == null || current.getSent() != 0) return false;
+
+		current.setSent(2); // 2 means failed, stop trying
+		current.setUpdatedAt(time);
+		table().updateItem(current);
+		return true;
 	}
 }

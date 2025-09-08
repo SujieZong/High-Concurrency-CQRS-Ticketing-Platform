@@ -7,8 +7,6 @@ spring:
   docker:
     compose:
       enabled: false
-  jpa:
-    open-in-view: false
 
   cloud:
     stream:
@@ -55,7 +53,10 @@ spring:
       maximum-pool-size: ${SPRING_DS_MAX_POOL:20}
       connection-timeout: ${SPRING_DS_CONN_TIMEOUT:30000}
 
-
+app:
+  dynamo:
+    table:
+      outbox: OutboxEvent
 
 aws:
   dynamodb:

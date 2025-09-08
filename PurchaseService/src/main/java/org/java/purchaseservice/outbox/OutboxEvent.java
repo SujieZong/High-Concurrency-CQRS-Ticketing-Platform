@@ -1,4 +1,4 @@
-package org.java.purchaseservice.domain;
+package org.java.purchaseservice.outbox;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
