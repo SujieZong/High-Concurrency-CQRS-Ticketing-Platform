@@ -5,12 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ad43b08c-8d8f-4006-8ec9-8dece01d310c" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../PurchaseService/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../PurchaseService/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../PurchaseService/src/main/java/org/java/purchaseservice/config/RedisLuaConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/../PurchaseService/src/main/java/org/java/purchaseservice/config/RedisLuaConfig.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../PurchaseService/src/main/java/org/java/purchaseservice/service/redis/SeatOccupiedRedisFacade.java" beforeDir="false" afterPath="$PROJECT_DIR$/../PurchaseService/src/main/java/org/java/purchaseservice/service/redis/SeatOccupiedRedisFacade.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../localDockerInitiate.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../localDockerInitiate.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../target/effective-pom.xml" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -111,7 +107,7 @@
       <workItem from="1756840625703" duration="701000" />
       <workItem from="1756867591438" duration="10000" />
       <workItem from="1756955951165" duration="17000" />
-      <workItem from="1757305663560" duration="1016000" />
+      <workItem from="1757305663560" duration="1018000" />
     </task>
     <servers />
   </component>
