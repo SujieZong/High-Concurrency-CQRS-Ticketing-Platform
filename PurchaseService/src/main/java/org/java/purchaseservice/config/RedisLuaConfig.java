@@ -17,7 +17,7 @@ public class RedisLuaConfig {
 	/*
 	 * Try to Occupy seats through Lua Script
 	 */
-	@Bean
+	@Bean(name = "tryOccupySeatScript")
 	public DefaultRedisScript<Long> tryOccupySeatScript() {
 		DefaultRedisScript<Long> script = new DefaultRedisScript<>();
 		ClassPathResource res = new ClassPathResource("lua/occupySeat.lua");
@@ -35,7 +35,7 @@ public class RedisLuaConfig {
 		return script;
 	}
 
-	@Bean
+	@Bean(name = "tryReleaseSeatScript")
 	public DefaultRedisScript<Long> tryReleaseSeatScript() {
 		DefaultRedisScript<Long> script = new DefaultRedisScript<>();
 		ClassPathResource res = new ClassPathResource("lua/releaseSeat.lua");
