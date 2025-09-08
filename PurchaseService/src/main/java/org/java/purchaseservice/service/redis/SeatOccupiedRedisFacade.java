@@ -16,8 +16,8 @@ import java.util.List;
 @Slf4j
 public class SeatOccupiedRedisFacade {
 	private final VenueConfigService venueConfigService;
-	private final DefaultRedisScript<Long> tryOccupySeatScript;
-	private final DefaultRedisScript<Long> tryReleaseSeatScript;
+	private final DefaultRedisScript<Long> tryOccupySeatScript; //load lua script method
+	private final DefaultRedisScript<Long> tryReleaseSeatScript; //load lua script method
 	private final StringRedisTemplate stringRedisTemplate;
 
 	public SeatOccupiedRedisFacade(

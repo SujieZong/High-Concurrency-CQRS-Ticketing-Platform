@@ -37,21 +37,27 @@ flowchart LR
 ## Architecture
 
 - ### Structure
-    - **Purchase Service (API)**
-        - Spring Boot REST controllers (ticket creation)
-        - Service layer (Redis/Lua seat lock)
-        - Direct DynamoDB writes (write model)
-        - Outbox integration and RabbitMQ producer for ticket events
-        - **Persistence Consumer Service**
-            - RabbitMQ consumer that projects ticket events into MySQL (read model) for queries and analytics.
-            - Implements Outbox pattern with Spring Cloud Stream (RabbitMQ binder) for reliable and redoable message
-              delivery.
-        - **Query Service**
-            - Exposes REST APIs for ticket queries, counts, and revenue aggregation.
-            - Uses Spring Data JPA to query MySQL read models.
-        - **Deployment**
-            - Docker Compose brings up Redis, RabbitMQ, MySQL, DynamoDB Local, and all service containers with one
-              command.
+    - **Purchase Service (Write API)**
+      - Spring Boot REST controllers (ticket creation)
+      - Service layer (Redis + Lua for atomic seat lock)
+      - Direct writes to **DynamoDB** (write model / source of truth)
+      - **Outbox pattern implemented here:**
+          - Writes ticket events into **OutboxEvent** table (DynamoDB)
+          - `OutboxPublisher` reads unsent events, applies retry & dead-letter logic
+          - Publishes events to **RabbitMQ** (via Spring Cloud Stream / Rabbit binder)
+      
+    - **Persistence Consumer Service (Read Model Projector)**
+      - Spring Boot service consuming ticket events from **RabbitMQ**
+      - Persists events into **MySQL** (read-optimized model)
+      - Uses Outbox + retry + dead-letter handling for reliable, idempotent projection
+
+    - **Query Service (Read API)**
+        - Exposes REST APIs for:
+            - Fetching a ticket by `ticketId`
+            - Counting sold tickets per event/zone
+            - Aggregating ticket revenue
+        - Uses **Spring Data JPA** to query the MySQL read model
+
 - ### Route
     - **Write Path**
         - REST API receives the purchase request
@@ -65,11 +71,10 @@ flowchart LR
             - → MySQL read model supports queries, counts, and analytics
 
 ## Run Locally
-
-- `./mvnw clean package`
-    - run in ticketing and RabbitConsumer project
-- `./localDockerInitiate.sh`
-- `docker-compose down`
+- Run Script from root, it should build package, build and run containers on docker. 
+  - `./localDockerInitiate.sh`
+- After Finish:
+  - `docker-compose down`
 
 ## REST API
 
