@@ -149,17 +149,4 @@ flowchart LR
 - Shopping Cart & Ticket Hold
   - Hold space for consumer while making payment
   - Payment verification
-  - Undo Purchase, undo seat purchase, release seat hold.
-
-```mermaid
-flowchart LR
-    Client -->|POST ticket| PurchaseService
-    PurchaseService -->|Redis seat lock| Redis
-    PurchaseService -->|Write| DynamoDB
-    PurchaseService -->|Outbox Event| OutboxTable[(Outbox Table)]
-    OutboxTable --> OutboxPublisher
-    OutboxPublisher -->|Kafka| Kafka[(Kafka)]
-    Kafka --> PersistenceConsumer
-    PersistenceConsumer -->|Write| MySQL
-    QueryService -->|Query| MySQL
-```
+  - Undo Purchase, release seat hold.
