@@ -1,5 +1,5 @@
 package org.java.purchaseservice.outbox;
 
 public interface OutboxMessagePublisher {
-	boolean rabbitPublish(String payload, String key);
+	boolean kafkaPublish(String payload, String key);
 }
