@@ -10,25 +10,30 @@ spring:
 
   cloud:
     stream:
-      defaultBinder: rabbit
+      defaultBinder: kafka
       bindings:
         #Sender bind channel
         ticket-out-0:
           destination: ticket.exchange
           contentType: application/json
-      rabbit:
+      kafka:
+        binder:
+          brokers: kafka-1:9092,kafka-2:9092,kafka-3:9092
         bindings:
-          ticket-out-0:
+          ticket-out-0: #binding name
             producer:
-              exchangeType: topic
-              routingKeyExpression: '''ticket.created'''
-              declareExchange: true
+              configuration:
+                acks: 1
+                enable.idempotence: true
+                linger.ms: 5
+                batch.size: 65536
+                delivery.timeout.ms: 120000
 
-  rabbitmq:
-    host: ${SPRING_RABBITMQ_HOST}
-    port: ${SPRING_RABBITMQ_PORT:5672}
-    username: ${SPRING_RABBITMQ_USERNAME}
-    password: ${SPRING_RABBITMQ_PASSWORD}
+#  rabbitmq:
+#    host: ${SPRING_RABBITMQ_HOST}
+#    port: ${SPRING_RABBITMQ_PORT:5672}
+#    username: ${SPRING_RABBITMQ_USERNAME}
+#    password: ${SPRING_RABBITMQ_PASSWORD}
 
   data:
     redis:

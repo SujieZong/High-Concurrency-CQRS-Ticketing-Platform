@@ -41,7 +41,7 @@ public class OutboxPublisher {
 
 				try {
 					String routingOrPartitionKey = extractKey(e); // Rabbit: routingKey；未来 Kafka: partitionKey
-					boolean ok = messagePublisher.rabbitPublish(e.getPayload(), routingOrPartitionKey);
+					boolean ok = messagePublisher.kafkaPublish(e.getPayload(), routingOrPartitionKey); //改成了Kafka
 					if (!ok) throw new IllegalStateException("rabbitPublish failed");
 
 					boolean marked = repo.markSent(e.getId(), Instant.now());
