@@ -24,6 +24,66 @@ services:
       timeout: 5s
       retries: 5
 
+  kafka-1:
+    image: bitnami/kafka:latest
+    container_name: kafka-1
+    environment:
+      - KAFKA_CFG_PROCESS.ROLES=broker,controller
+      - KAFKA_CFG_NODE_ID=1
+      - KAFKA_CFG_CONTROLLER.QUORUM.VOTERS=1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED.LISTENERS=PLAINTEXT://kafka-1:9092
+      - KAFKA_CFG_CONTROLLER.LISTENER.NAMES=CONTROLLER
+      - KAFKA_CFG_INTER.BROKER.LISTENER.NAME=PLAINTEXT
+      - KAFKA_CFG_OFFSETS.TOPIC.REPLICATION.FACTOR=3
+      - KAFKA_CFG_TRANSACTION.STATE.LOG.REPLICATION.FACTOR=3
+      - KAFKA_CFG_TRANSACTION.STATE.LOG.MIN.ISR=2
+    networks: [ ticketing-net ]
+
+  kafka-2:
+    image: bitnami/kafka:latest
+    container_name: kafka-2
+    environment:
+      - KAFKA_CFG_PROCESS.ROLES=broker,controller
+      - KAFKA_CFG_NODE_ID=2
+      - KAFKA_CFG_CONTROLLER.QUORUM.VOTERS=1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED.LISTENERS=PLAINTEXT://kafka-2:9092
+      - KAFKA_CFG_CONTROLLER.LISTENER.NAMES=CONTROLLER
+      - KAFKA_CFG_INTER.BROKER.LISTENER.NAME=PLAINTEXT
+      - KAFKA_CFG_OFFSETS.TOPIC.REPLICATION.FACTOR=3
+      - KAFKA_CFG_TRANSACTION.STATE.LOG.REPLICATION.FACTOR=3
+      - KAFKA_CFG_TRANSACTION.STATE.LOG.MIN.ISR=2
+    networks: [ ticketing-net ]
+
+  kafka-3:
+    image: bitnami/kafka:latest
+    container_name: kafka-3
+    environment:
+      - KAFKA_CFG_PROCESS.ROLES=broker,controller
+      - KAFKA_CFG_NODE_ID=3
+      - KAFKA_CFG_CONTROLLER.QUORUM.VOTERS=1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED.LISTENERS=PLAINTEXT://kafka-3:9092
+      - KAFKA_CFG_CONTROLLER.LISTENER.NAMES=CONTROLLER
+      - KAFKA_CFG_INTER.BROKER.LISTENER.NAME=PLAINTEXT
+      - KAFKA_CFG_OFFSETS.TOPIC.REPLICATION.FACTOR=3
+      - KAFKA_CFG_TRANSACTION.STATE.LOG.REPLICATION.FACTOR=3
+      - KAFKA_CFG_TRANSACTION.STATE.LOG.MIN.ISR=2
+    networks: [ ticketing-net ]
+
+  topic-provisioner:
+    image: bitnami/kafka:latest
+    depends_on: { kafka-1: { condition: service_started }, kafka-2: { condition: service_started }, kafka-3: { condition: service_started } }
+    entrypoint: [ "/bin/bash","-lc" ]
+    command: >
+      kafka-topics.sh --bootstrap-server kafka-1:9092
+      --create --if-not-exists --topic ticket.exchange
+      --partitions 12 --replication-factor 3 && echo "topics provisioned"
+    restart: "no"
+    networks: [ ticketing-net ]
+
+
   dynamodb:
     image: amazon/dynamodb-local
     ports:
@@ -31,12 +91,11 @@ services:
     command: [ "-jar","DynamoDBLocal.jar","-sharedDb" ] #share across regions
     # could add volume here to make DynamoDB permanent
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8000 || exit 1"]
+      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8000 || exit 1" ]
       interval: 5s
       timeout: 3s
       retries: 30
       start_period: 10s
-
 
   # —— API ——
   # —— Purchase Service —— Redis, Dynamo, Rabbit
