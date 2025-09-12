@@ -13,7 +13,7 @@ write model, and MySQL (via Spring Data JPA) stores the read model.
 - [DONE] Migrated JDBC → Spring Data JPA (read side / MySQL)
     - Reduced boilerplate, improved transaction handling, and simplified testing.
 - [DONE] One-click local bring-up with Docker Compose
-    - Spins up Redis, RabbitMQ, MySQL, DynamoDB Local, and all service containers in one command
+    - Spin up Redis, RabbitMQ, MySQL, DynamoDB Local, and all service containers in one command
 - [DONE] Unified DynamoDB schema
     - Standardized attribute names/types (e.g., zoneId, createdOn) across producer and consumer, removing schema drift
       errors.
@@ -28,7 +28,9 @@ flowchart LR
   Client -->|POST ticket| PurchaseService
   PurchaseService -->|Redis seat lock| Redis
   PurchaseService -->|Write| DynamoDB
-  PurchaseService -->|Outbox Event| RabbitMQ
+  PurchaseService -->|Write Event| OutboxTable[(Outbox Table)]
+  OutboxTable --> OutboxPublisher
+  OutboxPublisher -->|Publish| RabbitMQ
   RabbitMQ --> PersistenceConsumer
   PersistenceConsumer -->|Write| MySQL
   QueryService -->|Query| MySQL
@@ -42,7 +44,7 @@ flowchart LR
       - Service layer (Redis + Lua for atomic seat lock)
       - Direct writes to **DynamoDB** (write model / source of truth)
       - **Outbox pattern implemented here:**
-          - Writes ticket events into **OutboxEvent** table (DynamoDB)
+          - Write ticket events into **OutboxEvent** table (DynamoDB)
           - `OutboxPublisher` reads unsent events, applies retry & dead-letter logic
           - Publishes events to **RabbitMQ** (via Spring Cloud Stream / Rabbit binder)
       
@@ -148,3 +150,16 @@ flowchart LR
   - Hold space for consumer while making payment
   - Payment verification
   - Undo Purchase, undo seat purchase, release seat hold.
+
+```mermaid
+flowchart LR
+    Client -->|POST ticket| PurchaseService
+    PurchaseService -->|Redis seat lock| Redis
+    PurchaseService -->|Write| DynamoDB
+    PurchaseService -->|Outbox Event| OutboxTable[(Outbox Table)]
+    OutboxTable --> OutboxPublisher
+    OutboxPublisher -->|Kafka| Kafka[(Kafka)]
+    Kafka --> PersistenceConsumer
+    PersistenceConsumer -->|Write| MySQL
+    QueryService -->|Query| MySQL
+```
