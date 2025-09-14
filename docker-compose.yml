@@ -1,4 +1,7 @@
 # docker-compose.yml 放在项目根目录，与 TicketingPlatform/、RabbitCombinedConsumer/ 平级
+networks:
+  ticketing-net: { }
+
 services:
   redis:
     image: redis:7-alpine
@@ -9,6 +12,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+    networks: [ ticketing-net ]
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -23,66 +27,96 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks: [ ticketing-net ]
+
 
   kafka-1:
     image: bitnami/kafka:latest
     container_name: kafka-1
     environment:
-      - KAFKA_CFG_PROCESS.ROLES=broker,controller
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
       - KAFKA_CFG_NODE_ID=1
-      - KAFKA_CFG_CONTROLLER.QUORUM.VOTERS=1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
-      - KAFKA_CFG_ADVERTISED.LISTENERS=PLAINTEXT://kafka-1:9092
-      - KAFKA_CFG_CONTROLLER.LISTENER.NAMES=CONTROLLER
-      - KAFKA_CFG_INTER.BROKER.LISTENER.NAME=PLAINTEXT
-      - KAFKA_CFG_OFFSETS.TOPIC.REPLICATION.FACTOR=3
-      - KAFKA_CFG_TRANSACTION.STATE.LOG.REPLICATION.FACTOR=3
-      - KAFKA_CFG_TRANSACTION.STATE.LOG.MIN.ISR=2
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka-1:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=3
+      - KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=3
+      - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=2
+      - KAFKA_CFG_MIN_INSYNC_REPLICAS=2
+      - KAFKA_KRAFT_CLUSTER_ID=${CLUSTER_ID}
     networks: [ ticketing-net ]
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1" ]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
 
   kafka-2:
     image: bitnami/kafka:latest
     container_name: kafka-2
     environment:
-      - KAFKA_CFG_PROCESS.ROLES=broker,controller
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
       - KAFKA_CFG_NODE_ID=2
-      - KAFKA_CFG_CONTROLLER.QUORUM.VOTERS=1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
-      - KAFKA_CFG_ADVERTISED.LISTENERS=PLAINTEXT://kafka-2:9092
-      - KAFKA_CFG_CONTROLLER.LISTENER.NAMES=CONTROLLER
-      - KAFKA_CFG_INTER.BROKER.LISTENER.NAME=PLAINTEXT
-      - KAFKA_CFG_OFFSETS.TOPIC.REPLICATION.FACTOR=3
-      - KAFKA_CFG_TRANSACTION.STATE.LOG.REPLICATION.FACTOR=3
-      - KAFKA_CFG_TRANSACTION.STATE.LOG.MIN.ISR=2
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka-2:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=3
+      - KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=3
+      - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=2
+      - KAFKA_CFG_MIN_INSYNC_REPLICAS=2
+      - KAFKA_KRAFT_CLUSTER_ID=${CLUSTER_ID}
     networks: [ ticketing-net ]
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1" ]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
 
   kafka-3:
     image: bitnami/kafka:latest
     container_name: kafka-3
     environment:
-      - KAFKA_CFG_PROCESS.ROLES=broker,controller
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
       - KAFKA_CFG_NODE_ID=3
-      - KAFKA_CFG_CONTROLLER.QUORUM.VOTERS=1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
-      - KAFKA_CFG_ADVERTISED.LISTENERS=PLAINTEXT://kafka-3:9092
-      - KAFKA_CFG_CONTROLLER.LISTENER.NAMES=CONTROLLER
-      - KAFKA_CFG_INTER.BROKER.LISTENER.NAME=PLAINTEXT
-      - KAFKA_CFG_OFFSETS.TOPIC.REPLICATION.FACTOR=3
-      - KAFKA_CFG_TRANSACTION.STATE.LOG.REPLICATION.FACTOR=3
-      - KAFKA_CFG_TRANSACTION.STATE.LOG.MIN.ISR=2
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka-3:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=3
+      - KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=3
+      - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=2
+      - KAFKA_CFG_MIN_INSYNC_REPLICAS=2
+      - KAFKA_KRAFT_CLUSTER_ID=${CLUSTER_ID}
     networks: [ ticketing-net ]
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1" ]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
 
-  topic-provisioner:
-    image: bitnami/kafka:latest
-    depends_on: { kafka-1: { condition: service_started }, kafka-2: { condition: service_started }, kafka-3: { condition: service_started } }
-    entrypoint: [ "/bin/bash","-lc" ]
-    command: >
-      kafka-topics.sh --bootstrap-server kafka-1:9092
-      --create --if-not-exists --topic ticket.exchange
-      --partitions 12 --replication-factor 3 && echo "topics provisioned"
-    restart: "no"
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8088:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=ticketing
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka-1:9092,kafka-2:9092,kafka-3:9092
+    depends_on:
+      kafka-1:
+        condition: service_healthy
     networks: [ ticketing-net ]
-
 
   dynamodb:
     image: amazon/dynamodb-local
@@ -96,10 +130,13 @@ services:
       timeout: 3s
       retries: 30
       start_period: 10s
+    networks: [ ticketing-net ]
+
 
   # —— API ——
   # —— Purchase Service —— Redis, Dynamo, Rabbit
   purchase-service:
+    networks: [ ticketing-net ]
     build:
       context: ./PurchaseService
       dockerfile: Dockerfile
@@ -141,6 +178,9 @@ services:
       redis: { condition: service_healthy }
       rabbitmq: { condition: service_healthy }
       dynamodb: { condition: service_healthy }
+      kafka-1: { condition: service_healthy }
+      kafka-2: { condition: service_healthy }
+      kafka-3: { condition: service_healthy }
 
     healthcheck:
       test: [ "CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"'" ]
@@ -151,6 +191,7 @@ services:
 
   # —— Query Service —— MySQL
   query-service:
+    networks: [ ticketing-net ]
     build:
       context: ./QueryService
       dockerfile: Dockerfile
@@ -180,6 +221,7 @@ services:
 
   # —— Consumer —— MySQL, Rabbit
   rabbit-consumer:
+    networks: [ ticketing-net ]
     build:
       context: ./RabbitCombinedConsumer
       dockerfile: Dockerfile

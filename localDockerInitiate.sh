@@ -8,7 +8,22 @@ TABLE_TICKETS="Tickets"
 TABLE_OUTBOX="OutboxEvent"
 GSI_NAME="gsi_sent_createdAt"
 
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+KAFKA_SCRIPT="$ROOT/KafkaSetting/src/scripts/kafka.sh"
 
+# setup for cluster ID
+if [[ -z "${CLUSTER_ID:-}" ]]; then
+  CLUSTER_ID="$(
+    docker run --rm bitnami/kafka:latest \
+    /bin/bash -lc '/opt/bitnami/kafka/bin/kafka-storage.sh random-uuid' | tr -d '\r\n'
+  )"
+  export CLUSTER_ID
+  echo "CLUSTER_ID=$CLUSTER_ID"
+fi
+# make cluster id persistent since Kraft
+if [[ ! -f "$ROOT/.env" ]] || ! grep -q '^CLUSTER_ID=' "$ROOT/.env"; then
+  echo "CLUSTER_ID=$CLUSTER_ID" >> "$ROOT/.env"
+fi
 
 echo "Stopping old dev containers…"
 docker rm -f dev-redis dev-rabbitmq dev-dynamodb \
@@ -18,16 +33,21 @@ echo "Packaging all modules with Maven…"
 mvn clean package -DskipTests
 
 echo "Starting all services via Docker Compose…"
-docker compose build --no-cache
 docker compose up --build -d
 
 echo "Waiting for DynamoDB Local to be ready…"
 sleep 5
 
+echo "Starting Kafka…"
+bash "$KAFKA_SCRIPT" topics ticket.exchange 3 3 # setpartition = 3
+
+echo "Kafka status:"
+bash "$KAFKA_SCRIPT" ps
+
 echo "Ensuring DynamoDB table '${TABLE_TICKETS}' exists…"
 aws dynamodb list-tables \
   --endpoint-url "${DynamoDB_ENDPOINT}"\
-  --region"${AWS_REGION}" 2>/dev/null \
+  --region "${AWS_REGION}" 2>/dev/null \
 | grep -q "\"${TABLE_TICKETS}\"" || \
 aws dynamodb create-table \
   --table-name "${TABLE_TICKETS}" \
@@ -61,7 +81,6 @@ aws dynamodb create-table \
   --billing-mode PAY_PER_REQUEST \
   --endpoint-url "${DynamoDB_ENDPOINT}" \
   --region "${AWS_REGION}"
-
 
 echo "Verifying table creation…"
 aws dynamodb describe-table \
