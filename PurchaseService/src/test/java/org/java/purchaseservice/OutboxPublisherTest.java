@@ -73,14 +73,14 @@ class OutboxPublisherTest {
 		// given
 		OutboxEvent e = evt("id-1", "agg-1", "{\"ticketId\":\"t-1\"}", 0, 0, null);
 		when(repo.queryUnsent(anyInt())).thenReturn(pagesOf(List.of(e)));
-		when(messagePublisher.rabbitPublish(anyString(), anyString())).thenReturn(true);
+		when(messagePublisher.kafkaPublish(anyString(), anyString())).thenReturn(true);
 		when(repo.markSent(anyString(), any())).thenReturn(true);
 
 		// when
 		publisher.flush();
 
 		// then
-		verify(messagePublisher).rabbitPublish(eq(e.getPayload()), keyCaptor.capture());
+		verify(messagePublisher).kafkaPublish(eq(e.getPayload()), keyCaptor.capture());
 		verify(repo).markSent(idCaptor.capture(), any());
 
 		// key 优先 aggregateId
@@ -96,7 +96,7 @@ class OutboxPublisherTest {
 		// given
 		OutboxEvent e = evt("id-2", "agg-2", "{\"ticketId\":\"t-2\"}", 1, 0, null);
 		when(repo.queryUnsent(anyInt())).thenReturn(pagesOf(List.of(e)));
-		when(messagePublisher.rabbitPublish(anyString(), anyString())).thenThrow(new RuntimeException("boom"));
+		when(messagePublisher.kafkaPublish(anyString(), anyString())).thenThrow(new RuntimeException("boom"));
 
 		// when
 		publisher.flush();
@@ -117,7 +117,7 @@ class OutboxPublisherTest {
 		publisher.flush();
 
 		// then: 不发送、不标记、不重试
-		verify(messagePublisher, never()).rabbitPublish(anyString(), anyString());
+		verify(messagePublisher, never()).kafkaPublish(anyString(), anyString());
 		verify(repo, never()).markSent(anyString(), any());
 		verify(repo, never()).recordRetry(anyString(), any());
 		verify(repo, never()).markDead(anyString(), any());
@@ -134,7 +134,7 @@ class OutboxPublisherTest {
 
 		// then
 		verify(repo).markDead(eq("id-4"), any());
-		verify(messagePublisher, never()).rabbitPublish(anyString(), anyString());
+		verify(messagePublisher, never()).kafkaPublish(anyString(), anyString());
 		verify(repo, never()).markSent(anyString(), any());
 		verify(repo, never()).recordRetry(anyString(), any());
 	}
@@ -144,14 +144,14 @@ class OutboxPublisherTest {
 		// given: 没有 aggregateId，用 payload.ticketId
 		OutboxEvent e = evt("id-5", null, "{\"ticketId\":\"T-XYZ\"}", 0, 0, null);
 		when(repo.queryUnsent(anyInt())).thenReturn(pagesOf(List.of(e)));
-		when(messagePublisher.rabbitPublish(anyString(), anyString())).thenReturn(true);
+		when(messagePublisher.kafkaPublish(anyString(), anyString())).thenReturn(true);
 		when(repo.markSent(anyString(), any())).thenReturn(true);
 
 		// when
 		publisher.flush();
 
 		// then
-		verify(messagePublisher).rabbitPublish(eq(e.getPayload()), keyCaptor.capture());
+		verify(messagePublisher).kafkaPublish(eq(e.getPayload()), keyCaptor.capture());
 		org.junit.jupiter.api.Assertions.assertEquals("T-XYZ", keyCaptor.getValue());
 	}
 
@@ -159,7 +159,7 @@ class OutboxPublisherTest {
 	void flush_publishReturnsFalse_alsoTriggersRetry() {
 		var e = evt("id-x", "agg-x", "{}", 0, 0, null);
 		when(repo.queryUnsent(anyInt())).thenReturn(pagesOf(List.of(e)));
-		when(messagePublisher.rabbitPublish(anyString(), anyString())).thenReturn(false); // 返回 false 也算失败
+		when(messagePublisher.kafkaPublish(anyString(), anyString())).thenReturn(false); // 返回 false 也算失败
 
 		publisher.flush();
 
@@ -171,7 +171,7 @@ class OutboxPublisherTest {
 	void flush_markSentRace_losesGracefully() {
 		var e = evt("id-race", "agg", "{}", 0, 0, null);
 		when(repo.queryUnsent(anyInt())).thenReturn(pagesOf(List.of(e)));
-		when(messagePublisher.rabbitPublish(anyString(), anyString())).thenReturn(true);
+		when(messagePublisher.kafkaPublish(anyString(), anyString())).thenReturn(true);
 		when(repo.markSent(eq("id-race"), any())).thenReturn(false); // 另一实例已标记成功
 
 		publisher.flush();

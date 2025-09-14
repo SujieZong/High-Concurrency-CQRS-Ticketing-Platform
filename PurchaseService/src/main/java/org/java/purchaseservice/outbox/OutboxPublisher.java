@@ -40,9 +40,9 @@ public class OutboxPublisher {
 				}
 
 				try {
-					String routingOrPartitionKey = extractKey(e); // Rabbit: routingKey；未来 Kafka: partitionKey
-					boolean ok = messagePublisher.kafkaPublish(e.getPayload(), routingOrPartitionKey); //改成了Kafka
-					if (!ok) throw new IllegalStateException("rabbitPublish failed");
+					String partitionKey = extractKey(e); //Kafka: partitionKey
+					boolean ok = messagePublisher.kafkaPublish(e.getPayload(), partitionKey); //改成了Kafka
+					if (!ok) throw new IllegalStateException("kafkaPublish failed");
 
 					boolean marked = repo.markSent(e.getId(), Instant.now());
 					if (!marked) {
@@ -54,7 +54,7 @@ public class OutboxPublisher {
 					repo.recordRetry(e.getId(),
 							n -> Instant.now().plusSeconds(Math.min(60, (long) Math.pow(2, n)))
 					);
-					log.warn("Outbox rabbitPublish failed. outboxId={}, attempts={}, err={}",
+					log.warn("Outbox kafkaPublish failed. outboxId={}, attempts={}, err={}",
 							e.getId(), attempts + 1, ex.toString());
 				}
 			}

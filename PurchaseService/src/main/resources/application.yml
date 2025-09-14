@@ -16,6 +16,9 @@ spring:
         ticket-out-0:
           destination: ticket.exchange
           contentType: application/json
+          producer:
+            partitionKeyExpression: headers['partitionKey']  # 使用 header 中的 partitionKey
+            partitionCount: 3  # 与你的 topic 分区数一致
       kafka:
         binder:
           brokers: kafka-1:9092,kafka-2:9092,kafka-3:9092
@@ -29,11 +32,11 @@ spring:
                 batch.size: 65536
                 delivery.timeout.ms: 120000
 
-#  rabbitmq:
-#    host: ${SPRING_RABBITMQ_HOST}
-#    port: ${SPRING_RABBITMQ_PORT:5672}
-#    username: ${SPRING_RABBITMQ_USERNAME}
-#    password: ${SPRING_RABBITMQ_PASSWORD}
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME}
+    password: ${SPRING_RABBITMQ_PASSWORD}
 
   data:
     redis:
