@@ -22,9 +22,12 @@ Thumbs.db
 **/.project
 **/.settings/
 
-# ===== Docker / Compose artifacts (可根据需要调整) =====
-**/.env
-**/*.env
+# ===== Environment files =====
+.env
+.env.local
+.env.*.local
+
+# ===== Docker / Compose artifacts =====
 **/.docker/
 **/.dockerignore
 

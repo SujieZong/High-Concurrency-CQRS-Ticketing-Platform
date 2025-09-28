@@ -17,11 +17,11 @@ spring:
           destination: ticket.exchange
           contentType: application/json
           producer:
-            partitionKeyExpression: headers['partitionKey']  # 使用 header 中的 partitionKey
-            partitionCount: 3  # 与你的 topic 分区数一致
+            partitionKeyExpression: headers['partitionKey']  # use header's partitionKey
+            partitionCount: 3  # Same as topic's partition
       kafka:
         binder:
-          brokers: kafka-1:9092,kafka-2:9092,kafka-3:9092
+          brokers: ${KAFKA_BROKERS:kafka-1:9092,kafka-2:9092,kafka-3:9092}
         bindings:
           ticket-out-0: #binding name
             producer:
@@ -70,7 +70,7 @@ logging:
     root: INFO
     org.java.purchaseservice: DEBUG
 
-# 启动期是否向 Redis 预热场馆/座区（本地调试可关）
+# If warmup Redis with bootstrap value
 tickets:
   bootstrap:
     venue-redis: ${TICKETS_BOOTSTRAP_VENUE_REDIS:true}

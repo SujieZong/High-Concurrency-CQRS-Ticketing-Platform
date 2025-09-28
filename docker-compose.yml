@@ -132,7 +132,6 @@ services:
       start_period: 10s
     networks: [ ticketing-net ]
 
-
   # —— API ——
   # —— Purchase Service —— Redis, Dynamo, Rabbit
   purchase-service:
@@ -164,9 +163,9 @@ services:
       AWS_DYNAMODB_ACCESS_PASS: key
 
       # MySQL
-      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/ticket_platform?serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: Qweasd123
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
 
       # Hikar pool setting
@@ -203,9 +202,9 @@ services:
       # MySQL
       SPRING_PROFILES_ACTIVE: docker
 
-      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/ticket_platform?serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: Qweasd123
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
 
       # Hikar pool setting
       SPRING_DS_MIN_IDLE: 5
@@ -238,13 +237,14 @@ services:
       SPRING_RABBITMQ_PASSWORD: guest
 
       # MySQL
-      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/ticket_platform?serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: Qweasd123
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
 
     depends_on:
       rabbitmq: { condition: service_healthy }
       dynamodb: { condition: service_healthy }
+      mysql: { condition: service_healthy }
     healthcheck:
       test: [ "CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"'" ]
       interval: 10s
