@@ -93,7 +93,7 @@ class TicketPurchaseServiceTest {
 		SeatOccupiedRedisFacade seat = mock(SeatOccupiedRedisFacade.class);
 		OutboxService outbox = mock(OutboxService.class);
 		DynamoTicketDaoInterface dynamo = mock(DynamoTicketDaoInterface.class);
-		ObjectMapper mapper = new ObjectMapper();
+		// ObjectMapper mapper = new ObjectMapper();
 		TicketMapper ticketMapper = mock(TicketMapper.class);
 
 		TicketPurchaseService svc =
@@ -115,7 +115,7 @@ class TicketPurchaseServiceTest {
 		SeatOccupiedRedisFacade seat = mock(SeatOccupiedRedisFacade.class);
 		OutboxService outbox = mock(OutboxService.class);
 		DynamoTicketDaoInterface dynamo = mock(DynamoTicketDaoInterface.class);
-		ObjectMapper mapper = new ObjectMapper();
+		// ObjectMapper mapper = new ObjectMapper();
 		TicketMapper ticketMapper = mock(TicketMapper.class);
 
 		when(ticketMapper.toEntity(any())).thenReturn(new TicketInfo());
