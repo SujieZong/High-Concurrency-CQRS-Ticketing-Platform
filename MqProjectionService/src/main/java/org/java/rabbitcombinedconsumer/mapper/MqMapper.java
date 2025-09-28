@@ -1,7 +1,6 @@
 package org.java.rabbitcombinedconsumer.mapper;
 
 import org.java.rabbitcombinedconsumer.dto.MqDTO;
-import org.java.rabbitcombinedconsumer.model.TicketCreation;
 import org.java.rabbitcombinedconsumer.model.TicketInfo;
 import org.java.rabbitcombinedconsumer.model.TicketStatus;
 import org.mapstruct.Mapper;

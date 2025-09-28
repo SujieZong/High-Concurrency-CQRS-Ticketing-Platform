@@ -219,14 +219,14 @@ services:
       retries: 10
       start_period: 40s
 
-  # —— Consumer —— MySQL, Rabbit
-  rabbit-consumer:
+  # —— MQ Projection Service —— MySQL, Rabbit, Kafka
+  mq-projection-service:
     networks: [ ticketing-net ]
     build:
-      context: ./RabbitCombinedConsumer
+      context: ./MqProjectionService
       dockerfile: Dockerfile
-    image: rabbit-consumer:latest
-    container_name: rabbit-consumer
+    image: mq-projection-service:latest
+    container_name: mq-projection-service
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
