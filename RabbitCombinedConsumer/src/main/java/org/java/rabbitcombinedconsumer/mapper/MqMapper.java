@@ -14,16 +14,6 @@ public interface MqMapper {
 
 	@Mapping(target = "status", expression = "java(mapStatus(mqDTO.getStatus()))")
 	TicketInfo toTicketInfo(MqDTO mqDTO);
-//
-//	default TicketStatus mapStatus(String s) {
-//		if (s == null) return TicketStatus.PENDING_PAYMENT;
-//		return switch (s.trim().toUpperCase()) {
-//			case "PAID"      -> TicketStatus.PAID;
-//			case "CANCELLED" -> TicketStatus.CANCELLED;
-//			case "CREATED"   -> TicketStatus.PENDING_PAYMENT;
-//			default          -> TicketStatus.PENDING_PAYMENT;
-//		};
-//	}
 
 	default TicketStatus mapStatus(TicketStatus s) {
 		return s == null ? TicketStatus.PENDING_PAYMENT : s;
