@@ -1,98 +1,129 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-#common variables
-DynamoDB_ENDPOINT="http://localhost:8000"
-AWS_REGION="us-west-2"
-TABLE_TICKETS="Tickets"
-TABLE_OUTBOX="OutboxEvent"
-GSI_NAME="gsi_sent_createdAt"
+# Load common utilities
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$SCRIPT_DIR/deployment/scripts/common.sh"
 
-ROOT="$(cd "$(dirname "$0")" && pwd)"
-KAFKA_SCRIPT="$ROOT/scripts/kafka.sh"
+# Set log prefix for this script
+LOG_PREFIX="DEPLOY"
 
-# setup for cluster ID
-if [[ -z "${CLUSTER_ID:-}" ]]; then
-  CLUSTER_ID="$(
-    docker run --rm bitnami/kafka:latest \
-    /bin/bash -lc '/opt/bitnami/kafka/bin/kafka-storage.sh random-uuid' | tr -d '\r\n'
-  )"
-  export CLUSTER_ID
-  echo "CLUSTER_ID=$CLUSTER_ID"
+# Show help information
+show_help() {
+    cat << 'EOF'
+CQRS Ticketing Platform - Docker Deployment Script
+
+Usage: ./localDockerInitiate.sh [OPTIONS]
+
+OPTIONS:
+  --quiet              Quiet mode - shows only essential deployment steps
+  --env <local|aws|prod>  Switch environment before deployment
+  --help               Show this help message
+
+EXAMPLES:
+  ./localDockerInitiate.sh                   Default deployment (verbose mode, current environment)
+  ./localDockerInitiate.sh --quiet           Quiet deployment with current environment
+  ./localDockerInitiate.sh --env aws         Deploy to AWS environment (verbose mode)
+  ./localDockerInitiate.sh --env local --quiet  Deploy to local environment (quiet mode)
+
+Note: Always performs clean Maven build for reliability
+
+EOF
+}
+
+# Check for options
+QUIET_MODE=false
+TARGET_ENV=""
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --quiet)
+            QUIET_MODE=true
+            shift
+            ;;
+        --env)
+            TARGET_ENV="$2"
+            shift 2
+            ;;
+        --help)
+            show_help
+            exit 0
+            ;;
+        *)
+            # Keep other arguments for build script
+            break
+            ;;
+    esac
+done
+
+# Switch environment if specified
+if [[ -n "$TARGET_ENV" ]]; then
+    log_step "=== Switching to $TARGET_ENV environment ==="
+    bash "$SCRIPT_DIR/deployment/scripts/switch-env.sh" "$TARGET_ENV"
+    log_info "Environment switched to $TARGET_ENV"
 fi
-# make cluster id persistent since Kraft
-if [[ ! -f "$ROOT/.env" ]] || ! grep -q '^CLUSTER_ID=' "$ROOT/.env"; then
-  echo "CLUSTER_ID=$CLUSTER_ID" >> "$ROOT/.env"
+
+# Common variables
+ROOT="$(get_project_root)"
+KAFKA_SCRIPT="$ROOT/deployment/scripts/kafka.sh"
+BUILD_SCRIPT="$ROOT/deployment/scripts/build.sh"
+DYNAMODB_SCRIPT="$ROOT/deployment/scripts/setup-dynamodb.sh"
+
+# === BUILD PHASE ===
+log_step "=== Starting Build Phase ==="
+if [[ "$QUIET_MODE" == true ]]; then
+    bash "$BUILD_SCRIPT" --quiet "$@"
+else
+    bash "$BUILD_SCRIPT" "$@"
+fi
+log_info "Build completed"
+
+# Load cluster ID from build script
+if [[ -f "$ROOT/deployment/.env" ]]; then
+    source "$ROOT/deployment/.env"
 fi
 
-echo "Stopping old dev containers…"
-# Note: dev-rabbitmq removed from cleanup as RabbitMQ is deprecated in favor of Kafka
-docker rm -f dev-redis dev-dynamodb \
-           ticketing-platform rabbit-consumer query-service purchase-service 2>/dev/null || true
-           # Removed: dev-rabbitmq
+# === DEPLOYMENT PHASE ===
+log_step "=== Starting Deployment Phase ==="
+log_step "Starting all services via Docker Compose..."
+docker compose -f deployment/docker-compose.yml up --build -d
 
-echo "Packaging all modules with Maven…"
-mvn clean package -DskipTests
+# === DATABASE SETUP PHASE ===
+log_step "=== Starting Database Setup Phase ==="
+if [[ "$QUIET_MODE" == true ]]; then
+    bash "$DYNAMODB_SCRIPT" --quiet
+else
+    bash "$DYNAMODB_SCRIPT"
+fi
+log_info "Database setup completed"
 
-echo "Starting all services via Docker Compose…"
-docker compose up --build -d
+# === KAFKA SETUP PHASE ===
+log_step "=== Starting Kafka Setup Phase ==="
+# Delete existing topic first to avoid conflicts
+bash "$KAFKA_SCRIPT" delete ticket.exchange 2>/dev/null || true
 
-echo "Waiting for DynamoDB Local to be ready…"
-sleep 5
+# Create topic with 3 partitions and 3 replicas
+bash "$KAFKA_SCRIPT" topics ticket.exchange 3 3
 
-echo "Starting Kafka…"
-bash "$KAFKA_SCRIPT" topics ticket.exchange 3 3 # setpartition = 3
+# Check topic status
+bash "$KAFKA_SCRIPT" ps >/dev/null
 
-echo "Kafka status:"
-bash "$KAFKA_SCRIPT" ps
+log_info "Kafka setup completed"
+sleep 3
 
-echo "Ensuring DynamoDB table '${TABLE_TICKETS}' exists…"
-aws dynamodb list-tables \
-  --endpoint-url "${DynamoDB_ENDPOINT}"\
-  --region "${AWS_REGION}" 2>/dev/null \
-| grep -q "\"${TABLE_TICKETS}\"" || \
-aws dynamodb create-table \
-  --table-name "${TABLE_TICKETS}" \
-  --attribute-definitions AttributeName=ticketId,AttributeType=S \
-  --key-schema AttributeName=ticketId,KeyType=HASH \
-  --billing-mode PAY_PER_REQUEST \
-  --endpoint-url "${DynamoDB_ENDPOINT}" \
-  --region "${AWS_REGION}"
+# === HEALTH CHECK PHASE ===
+log_step "=== Starting Health Check Phase ==="
+log_info "All containers are up!"
 
-# ==== OutboxEvent ====
-echo "Creating DynamoDB table '${TABLE_OUTBOX}' exists…"
-aws dynamodb list-tables --endpoint-url "${DynamoDB_ENDPOINT}" --region "${AWS_REGION}" 2>/dev/null \
-| grep -q "\"${TABLE_OUTBOX}\"" || \
-aws dynamodb create-table \
-  --table-name "${TABLE_OUTBOX}" \
-  --attribute-definitions \
-      AttributeName=id,AttributeType=S \
-      AttributeName=sent,AttributeType=N \
-      AttributeName=createdAt,AttributeType=S \
-  --key-schema AttributeName=id,KeyType=HASH \
-  --global-secondary-indexes "[
-    {
-      \"IndexName\": \"${GSI_NAME}\",
-      \"KeySchema\": [
-        {\"AttributeName\": \"sent\", \"KeyType\": \"HASH\"},
-        {\"AttributeName\": \"createdAt\", \"KeyType\": \"RANGE\"}
-      ],
-      \"Projection\": {\"ProjectionType\": \"ALL\"}
-    }
-  ]" \
-  --billing-mode PAY_PER_REQUEST \
-  --endpoint-url "${DynamoDB_ENDPOINT}" \
-  --region "${AWS_REGION}"
+log_info "Waiting for all services to be fully ready..."
+sleep 10
 
-echo "Verifying table creation…"
-aws dynamodb describe-table \
-  --table-name "${TABLE_TICKETS}" \
-  --endpoint-url http://localhost:8000 \
-  --region us-west-2 >/dev/null
-
-aws dynamodb describe-table \
-  --table-name OutboxEvent \
-  --endpoint-url http://localhost:8000 \
-  --region us-west-2 >/dev/null
-
-echo "All containers are up!"
+log_step "=== System Ready ==="
+log_success "CQRS System is now running!"
+log_info "***INFO*** Kafka UI: http://localhost:8088"
+log_info "***INFO*** PurchaseService: http://localhost:8080"
+log_info "***INFO*** QueryService: http://localhost:8081"
+echo ""
+log_info "***INFO*** Run automated tests:"
+echo "   bash deployment/scripts/test-system.sh"

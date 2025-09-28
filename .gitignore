@@ -23,9 +23,18 @@ Thumbs.db
 **/.settings/
 
 # ===== Environment files =====
+# Runtime environment files (contain actual credentials)
 .env
 .env.local
-.env.*.local
+.env.backup
+.env.personal
+
+deployment/.env
+deployment/.env.backup*
+deployment/.env.personal*
+
+# Keep these templates (safe to commit)
+!deployment/.env.template
 
 # ===== Docker / Compose artifacts =====
 **/.docker/

@@ -138,7 +138,7 @@ services:
   purchase-service:
     networks: [ ticketing-net ]
     build:
-      context: ./PurchaseService
+      context: ../PurchaseService
       dockerfile: Dockerfile
     image: purchase-service:latest
     ports:
@@ -193,7 +193,7 @@ services:
   query-service:
     networks: [ ticketing-net ]
     build:
-      context: ./QueryService
+      context: ../QueryService
       dockerfile: Dockerfile
     image: query-service:latest
     ports:
@@ -223,7 +223,7 @@ services:
   mq-projection-service:
     networks: [ ticketing-net ]
     build:
-      context: ./MqProjectionService
+      context: ../MqProjectionService
       dockerfile: Dockerfile
     image: mq-projection-service:latest
     container_name: mq-projection-service
