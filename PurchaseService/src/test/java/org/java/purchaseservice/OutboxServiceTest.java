@@ -1,6 +1,5 @@
 package org.java.purchaseservice;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.java.purchaseservice.outbox.OutboxRepository;
 import org.java.purchaseservice.outbox.OutboxService;
 import org.junit.jupiter.api.Test;
@@ -14,7 +13,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 // Mockito
 import static org.mockito.Mockito.*;
-import static org.mockito.ArgumentMatchers.*;
 
 class OutboxServiceTest {
 
@@ -56,7 +54,7 @@ class OutboxServiceTest {
 
 	@Test
 	void saveEvent_whenSerializationFails_throwIllegalArgumentException() {
-		class SelfRef { SelfRef me = this; }
+		class SelfRef { @SuppressWarnings("unused") SelfRef me = this; }
 
 		OutboxRepository repo = mock(OutboxRepository.class);
 		OutboxService svc = new OutboxService(repo);
