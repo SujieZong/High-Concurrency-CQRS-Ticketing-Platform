@@ -11,11 +11,11 @@ spring:
 
   cloud:
     stream:
-      defaultBinder: rabbit
+      defaultBinder: kafka  # Default Binder changes to Kafka from RabbitMQ
       bindings:
         ticket-in-0:
           destination: ticket.exchange
-          group: projector
+          group: ticketSqlSync  
           contentType: application/json
           consumer:
             #Receiver retry
@@ -23,6 +23,21 @@ spring:
             backOffInitialInterval: 1000
             backOffMultiplier: 2.0
             backOffMaxInterval: 10000
+            # Concurrent consumer Setting, 6 threads, 3 server, 2 thread each
+            concurrency: ${KAFKA_CONSUMER_CONCURRENCY:6}
+      kafka:
+        binder:
+          brokers: ${KAFKA_BROKERS:kafka-1:9092,kafka-2:9092,kafka-3:9092}
+          # Kafka fetch setting
+          consumer-properties:
+            fetch.min.bytes: 50000 #pull  size 50KB
+            fetch.max.wait.ms: 500  # Wait time for each pull
+            max.poll.records: 500 # max messages per pull
+            #Timeout setting
+            session.timeout.ms: 30000     # consumer communication timeout
+            heartbeat.interval.ms: 3000   # heartbeat check
+            max.poll.interval.ms: 300000  # Max processing period
+
       rabbit:
         bindings:
           ticket-in-0:
