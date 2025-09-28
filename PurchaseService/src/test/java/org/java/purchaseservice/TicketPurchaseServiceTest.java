@@ -27,7 +27,6 @@ class TicketPurchaseServiceTest {
 		SeatOccupiedRedisFacade seat = mock(SeatOccupiedRedisFacade.class);
 		OutboxService outbox = mock(OutboxService.class);
 		DynamoTicketDaoInterface dynamo = mock(DynamoTicketDaoInterface.class);
-		ObjectMapper mapper = new ObjectMapper();
 		TicketMapper ticketMapper = mock(TicketMapper.class);
 
 		TicketPurchaseService svc =
@@ -37,7 +36,6 @@ class TicketPurchaseServiceTest {
 		var req = new TicketPurchaseRequestDTO("V1", "E1", 1, "A", "7");
 
 		// mapper: CreationDTO -> entity；entity -> respondDTO
-		TicketInfo entity = new TicketInfo();
 		when(ticketMapper.toEntity(any())).thenAnswer(inv -> {
 			var creation = inv.getArgument(0, org.java.purchaseservice.dto.TicketCreationDTO.class);
 			var e = new TicketInfo();

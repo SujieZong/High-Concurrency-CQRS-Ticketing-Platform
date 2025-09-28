@@ -43,7 +43,7 @@ class OutboxPublisherTest {
 	// ---------- Outbox info to PageIterable ----------
 	private static PageIterable<OutboxEvent> pagesOf(List<OutboxEvent> items) {
 		SdkIterable<Page<OutboxEvent>> sdkIt =
-				() -> Collections.singletonList(Page.create(items)).iterator();
+				() -> Collections.singletonList(Page.builder(OutboxEvent.class).items(items).build()).iterator();
 		return PageIterable.create(sdkIt);
 	}
 
