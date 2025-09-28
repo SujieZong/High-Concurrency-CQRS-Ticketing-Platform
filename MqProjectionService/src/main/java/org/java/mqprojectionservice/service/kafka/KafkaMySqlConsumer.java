@@ -25,10 +25,13 @@ public class KafkaMySqlConsumer {
 	@Bean
 	public Consumer<Message<MqDTO>> ticket() {
 		return message -> {
+			log.info("【KafkaMQ】Consumer function invoked - message received!");
 			try {
 				MqDTO dto = message.getPayload();
-				String partition = message.getHeaders().get("kafka_receivedPartitionId", String.class);
-				String offset = message.getHeaders().get("kafka_offset", String.class);
+				Integer partitionId = message.getHeaders().get("kafka_receivedPartitionId", Integer.class);
+				String partition = partitionId != null ? partitionId.toString() : "unknown";
+				Long offsetId = message.getHeaders().get("kafka_offset", Long.class);
+				String offset = offsetId != null ? offsetId.toString() : "unknown";
 
 				log.info("【KafkaMQ】Received message: ticketId={}, partition={}, offset={}",
 						dto.getTicketId(), partition, offset);

@@ -17,21 +17,27 @@ public class KafkaStreamPublisher implements OutboxMessagePublisher {
 	@Override
 	public boolean kafkaPublish(String payload, String partitionKey) {
 		try {
+			log.info("【KafkaPublisher】Preparing to send message. partitionKey={}, payloadLength={}",
+					partitionKey, payload.length());
+			log.debug("【KafkaPublisher】Message payload: {}", payload);
+
 			Message<String> msg = MessageBuilder.withPayload(payload)
-					.setHeader("partitionKey", partitionKey)  // 匹配 yml 中的 headers['partitionKey']
+					.setHeader("partitionKey", partitionKey) // 匹配 yml 中的 headers['partitionKey']
 					.build();
 
 			boolean sent = streamBridge.send("ticket-out-0", msg);
-			log.debug("Message sent to Kafka. PartitionKey: {}, Success: {}", partitionKey, sent);
+
+			if (sent) {
+				log.info("【KafkaPublisher】Message sent to Kafka successfully. partitionKey={}", partitionKey);
+			} else {
+				log.error("【KafkaPublisher】Failed to send message to Kafka. partitionKey={}", partitionKey);
+			}
+
 			return sent;
 		} catch (Exception e) {
-			log.error("Failed to send message to Kafka", e);
+			log.error("【KafkaPublisher】Exception occurred while sending message to Kafka. partitionKey={}",
+					partitionKey, e);
 			return false;
 		}
-
-//		var msg = MessageBuilder.withPayload(payload)
-//				.setHeader("routingKey", routingKey) // yml 配 routing-key-expression 使用此 header
-//				.build();
-//		return streamBridge.send("ticket-out-0", msg);
 	}
 }

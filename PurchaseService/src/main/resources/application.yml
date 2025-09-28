@@ -18,10 +18,14 @@ spring:
           contentType: application/json
           producer:
             partitionKeyExpression: headers['partitionKey']  # use header's partitionKey
-            partitionCount: 3  # Same as topic's partition
+            partitionCount: 1  # Match current topic's partition count
+            requiredGroups: ticketSqlSync  # Ensure consumer group exists
       kafka:
         binder:
           brokers: ${KAFKA_BROKERS:kafka-1:9092,kafka-2:9092,kafka-3:9092}
+          # Auto create topic with correct partitions
+          autoCreateTopics: true
+          autoAddPartitions: true
         bindings:
           ticket-out-0: #binding name
             producer:

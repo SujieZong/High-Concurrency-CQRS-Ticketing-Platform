@@ -163,16 +163,16 @@ services:
       AWS_DYNAMODB_ACCESS_KEY: id
       AWS_DYNAMODB_ACCESS_PASS: key
 
-      # MySQL
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
+      # MySQL configuration removed - PurchaseService uses DynamoDB + Redis only
+      # SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      # SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      # SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      # SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
 
-      # Hikar pool setting
-      SPRING_DS_MIN_IDLE: 5
-      SPRING_DS_MAX_POOL: 20
-      SPRING_DS_CONN_TIMEOUT: 30000
+      # Hikari pool setting - removed as not using JDBC
+      # SPRING_DS_MIN_IDLE: 5
+      # SPRING_DS_MAX_POOL: 20
+      # SPRING_DS_CONN_TIMEOUT: 30000
 
     depends_on:
       redis: { condition: service_healthy }

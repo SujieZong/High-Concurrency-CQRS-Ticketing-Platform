@@ -2,9 +2,10 @@ package org.java.purchaseservice.outbox;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OutboxService {
@@ -30,8 +31,16 @@ public class OutboxService {
 			} else {
 				payload = mapper.writeValueAsString(payloadObj);
 			}
-			return repo.save(eventType, payload, aggregateId); //return outbox id
+
+			String outboxId = repo.save(eventType, payload, aggregateId);
+			log.info("【Outbox】Event saved successfully. outboxId={}, eventType={}, aggregateId={}, payloadLength={}",
+					outboxId, eventType, aggregateId, payload.length());
+			log.debug("【Outbox】Event payload: {}", payload);
+
+			return outboxId; // return outbox id
 		} catch (Exception e) {
+			log.error("【Outbox】Failed to serialize payload for eventType={}, aggregateId={}",
+					eventType, aggregateId, e);
 			throw new IllegalArgumentException("Serialize payload failed", e);
 		}
 	}

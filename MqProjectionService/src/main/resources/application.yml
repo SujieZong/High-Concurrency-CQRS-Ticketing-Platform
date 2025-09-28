@@ -10,6 +10,8 @@ spring:
       enabled: false
 
   cloud:
+    function:
+      definition: ticket
     stream:
       defaultBinder: kafka  # Default Binder changes to Kafka from RabbitMQ
       bindings:
@@ -25,9 +27,14 @@ spring:
             backOffMaxInterval: 10000
             # Concurrent consumer Setting, 6 threads, 3 server, 2 thread each
             concurrency: ${KAFKA_CONSUMER_CONCURRENCY:6}
+            # Start from earliest to catch all messages
+            startOffset: earliest
       kafka:
         binder:
           brokers: ${KAFKA_BROKERS:kafka-1:9092,kafka-2:9092,kafka-3:9092}
+          # Auto create topic with correct partitions to match producer
+          autoCreateTopics: true
+          autoAddPartitions: true
           # Kafka fetch setting
           consumer-properties:
             fetch.min.bytes: 50000 #pull  size 50KB
@@ -37,6 +44,12 @@ spring:
             session.timeout.ms: 30000     # consumer communication timeout
             heartbeat.interval.ms: 3000   # heartbeat check
             max.poll.interval.ms: 300000  # Max processing period
+        bindings:
+          ticket-in-0:
+            consumer:
+              # Ensure consumer can handle 3 partitions
+              configuration:
+                auto.offset.reset: earliest
 
       # RabbitMQ configuration commented out - system migrated to Kafka
       # rabbit:
@@ -80,3 +93,6 @@ management:
     health:
       probes:
         enabled: true
+  health:
+    rabbit:
+      enabled: false
