@@ -32,11 +32,12 @@ spring:
                 batch.size: 65536
                 delivery.timeout.ms: 120000
 
-  rabbitmq:
-    host: ${SPRING_RABBITMQ_HOST}
-    port: ${SPRING_RABBITMQ_PORT:5672}
-    username: ${SPRING_RABBITMQ_USERNAME}
-    password: ${SPRING_RABBITMQ_PASSWORD}
+  # RabbitMQ configuration commented out - system migrated to Kafka
+  # rabbitmq:
+  #   host: ${SPRING_RABBITMQ_HOST}
+  #   port: ${SPRING_RABBITMQ_PORT:5672}
+  #   username: ${SPRING_RABBITMQ_USERNAME}
+  #   password: ${SPRING_RABBITMQ_PASSWORD}
 
   data:
     redis:
