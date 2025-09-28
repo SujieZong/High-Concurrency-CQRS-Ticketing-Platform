@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-//Service：ticketId/createdOn，编排占座 → 写库 → 记 Outbox → 返回
+//Service：ticketId/createdOn，Redis Occupation → Write Dynamo → Record Outbox record → return
 @Service
 @Slf4j
 @RequiredArgsConstructor
