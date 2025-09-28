@@ -9,7 +9,7 @@ TABLE_OUTBOX="OutboxEvent"
 GSI_NAME="gsi_sent_createdAt"
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
-KAFKA_SCRIPT="$ROOT/KafkaSetting/src/scripts/kafka.sh"
+KAFKA_SCRIPT="$ROOT/scripts/kafka.sh"
 
 # setup for cluster ID
 if [[ -z "${CLUSTER_ID:-}" ]]; then
@@ -26,8 +26,10 @@ if [[ ! -f "$ROOT/.env" ]] || ! grep -q '^CLUSTER_ID=' "$ROOT/.env"; then
 fi
 
 echo "Stopping old dev containers…"
-docker rm -f dev-redis dev-rabbitmq dev-dynamodb \
+# Note: dev-rabbitmq removed from cleanup as RabbitMQ is deprecated in favor of Kafka
+docker rm -f dev-redis dev-dynamodb \
            ticketing-platform rabbit-consumer query-service purchase-service 2>/dev/null || true
+           # Removed: dev-rabbitmq
 
 echo "Packaging all modules with Maven…"
 mvn clean package -DskipTests

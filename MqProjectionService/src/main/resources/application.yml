@@ -38,13 +38,14 @@ spring:
             heartbeat.interval.ms: 3000   # heartbeat check
             max.poll.interval.ms: 300000  # Max processing period
 
-      rabbit:
-        bindings:
-          ticket-in-0:
-            consumer:
-              bindingRoutingKey: ticket.created
-              autoBindDlq: true
-              republishToDlq: true
+      # RabbitMQ configuration commented out - system migrated to Kafka
+      # rabbit:
+      #   bindings:
+      #     ticket-in-0:
+      #       consumer:
+      #         bindingRoutingKey: ticket.created
+      #         autoBindDlq: true
+      #         republishToDlq: true
 
   datasource:
     url: ${SPRING_DATASOURCE_URL}
@@ -56,11 +57,12 @@ spring:
       maximum-pool-size: ${SPRING_DS_MAX_POOL:20}
       connection-timeout: ${SPRING_DS_CONN_TIMEOUT:30000}
 
-  rabbitmq:
-    host: ${SPRING_RABBITMQ_HOST}
-    port: ${SPRING_RABBITMQ_PORT:5672}
-    username: ${SPRING_RABBITMQ_USERNAME}
-    password: ${SPRING_RABBITMQ_PASSWORD}
+  # RabbitMQ configuration commented out - system migrated to Kafka
+  # rabbitmq:
+  #   host: ${SPRING_RABBITMQ_HOST}
+  #   port: ${SPRING_RABBITMQ_PORT:5672}
+  #   username: ${SPRING_RABBITMQ_USERNAME}
+  #   password: ${SPRING_RABBITMQ_PASSWORD}
 
 logging:
   file:

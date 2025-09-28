@@ -14,20 +14,21 @@ services:
       retries: 10
     networks: [ ticketing-net ]
 
-  rabbitmq:
-    image: rabbitmq:3-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-    healthcheck:
-      test: [ "CMD", "rabbitmqctl", "status" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks: [ ticketing-net ]
+  # RabbitMQ - Currently commented out, system migrated to Kafka
+  # rabbitmq:
+  #   image: rabbitmq:3-management
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
+  #   environment:
+  #     RABBITMQ_DEFAULT_USER: guest
+  #     RABBITMQ_DEFAULT_PASS: guest
+  #   healthcheck:
+  #     test: [ "CMD", "rabbitmqctl", "status" ]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #   networks: [ ticketing-net ]
 
 
   kafka-1:
@@ -133,7 +134,7 @@ services:
     networks: [ ticketing-net ]
 
   # —— API ——
-  # —— Purchase Service —— Redis, Dynamo, Rabbit
+  # —— Purchase Service —— Redis, Dynamo, Kafka (RabbitMQ deprecated)
   purchase-service:
     networks: [ ticketing-net ]
     build:
@@ -150,11 +151,11 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
 
-      # RabbitMQ
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME: guest
-      SPRING_RABBITMQ_PASSWORD: guest
+      # RabbitMQ - Currently commented out, system migrated to Kafka
+      # SPRING_RABBITMQ_HOST: rabbitmq
+      # SPRING_RABBITMQ_PORT: 5672
+      # SPRING_RABBITMQ_USERNAME: guest
+      # SPRING_RABBITMQ_PASSWORD: guest
 
       # DynamoDB Local
       AWS_DYNAMODB_END_POINT: http://dynamodb:8000
@@ -175,7 +176,7 @@ services:
 
     depends_on:
       redis: { condition: service_healthy }
-      rabbitmq: { condition: service_healthy }
+      # rabbitmq: { condition: service_healthy }  # Commented out - migrated to Kafka
       dynamodb: { condition: service_healthy }
       kafka-1: { condition: service_healthy }
       kafka-2: { condition: service_healthy }
@@ -218,7 +219,7 @@ services:
       retries: 10
       start_period: 40s
 
-  # —— MQ Projection Service —— MySQL, Rabbit, Kafka
+  # —— MQ Projection Service —— MySQL, Kafka (RabbitMQ deprecated)
   mq-projection-service:
     networks: [ ticketing-net ]
     build:
@@ -230,11 +231,11 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
 
-      # RabbitMQ
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME: guest
-      SPRING_RABBITMQ_PASSWORD: guest
+      # RabbitMQ - Currently commented out, system migrated to Kafka
+      # SPRING_RABBITMQ_HOST: rabbitmq
+      # SPRING_RABBITMQ_PORT: 5672
+      # SPRING_RABBITMQ_USERNAME: guest
+      # SPRING_RABBITMQ_PASSWORD: guest
 
       # MySQL
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
@@ -242,9 +243,11 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
 
     depends_on:
-      rabbitmq: { condition: service_healthy }
+      # rabbitmq: { condition: service_healthy }  # Commented out - migrated to Kafka
       dynamodb: { condition: service_healthy }
-      mysql: { condition: service_healthy }
+      kafka-1: { condition: service_healthy }
+      kafka-2: { condition: service_healthy }
+      kafka-3: { condition: service_healthy }
     healthcheck:
       test: [ "CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"'" ]
       interval: 10s
