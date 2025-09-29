@@ -5,14 +5,13 @@ CREATE DATABASE IF NOT EXISTS ticket_platform
     COLLATE utf8mb4_unicode_ci;
 USE ticket_platform;
 
--- 1. 场馆表（Venue）
+-- 1.Venue
 CREATE TABLE venue (
                        venue_id    VARCHAR(64)  PRIMARY KEY,
                        city        VARCHAR(64)  NOT NULL
-    -- 还可以加 address、capacity 等
 );
 
--- 2. 分区表（Zone）
+-- 2. Zone
 CREATE TABLE zone (
                       venue_id      VARCHAR(64)   NOT NULL,
                       zone_id       INT            NOT NULL,
@@ -23,7 +22,7 @@ CREATE TABLE zone (
                       FOREIGN KEY (venue_id) REFERENCES venue(venue_id)
 );
 
--- 3. 活动表（Event）
+-- 3. Event
 CREATE TABLE event (
                        event_id   VARCHAR(64)  PRIMARY KEY,
                        venue_id   VARCHAR(64)  NOT NULL,
@@ -33,7 +32,7 @@ CREATE TABLE event (
                        FOREIGN KEY (venue_id) REFERENCES venue(venue_id)
 );
 
--- 4. 购票表（Ticket）
+-- 4. Ticket
 CREATE TABLE ticket (
                         ticket_id   VARCHAR(64)    PRIMARY KEY,
                         venue_id    VARCHAR(64)    NOT NULL,
@@ -41,6 +40,7 @@ CREATE TABLE ticket (
                         zone_id     INT            NOT NULL,
                         row_label   VARCHAR(8)     NOT NULL,
                         col_label   VARCHAR(8)     NOT NULL,
+                        status      VARCHAR(32)    NOT NULL DEFAULT 'PENDING_PAYMENT',
                         created_on  DATETIME       NOT NULL,
                         FOREIGN KEY (venue_id) REFERENCES venue(venue_id),
                         FOREIGN KEY (event_id) REFERENCES event(event_id),

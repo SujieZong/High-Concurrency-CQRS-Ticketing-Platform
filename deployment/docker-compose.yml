@@ -14,6 +14,24 @@ services:
       retries: 10
     networks: [ ticketing-net ]
 
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-ticketing
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ticket_platform
+      MYSQL_CHARACTER_SET_SERVER: utf8mb4
+      MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks: [ ticketing-net ]
+
   # RabbitMQ - Currently commented out, system migrated to Kafka
   # rabbitmq:
   #   image: rabbitmq:3-management
@@ -212,6 +230,9 @@ services:
       SPRING_DS_MAX_POOL: 20
       SPRING_DS_CONN_TIMEOUT: 30000
 
+    depends_on:
+      mysql: { condition: service_healthy }
+
     healthcheck:
       test: [ "CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"'" ]
       interval: 10s
@@ -244,6 +265,7 @@ services:
 
     depends_on:
       # rabbitmq: { condition: service_healthy }  # Commented out - migrated to Kafka
+      mysql: { condition: service_healthy }
       dynamodb: { condition: service_healthy }
       kafka-1: { condition: service_healthy }
       kafka-2: { condition: service_healthy }
