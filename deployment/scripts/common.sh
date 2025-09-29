@@ -44,10 +44,13 @@ log_warning() {
 get_project_root() {
     local script_dir="$(cd "$(dirname "${BASH_SOURCE[1]}")" && pwd)"
     if [[ "$script_dir" == *"/deployment/scripts" ]]; then
+        # If called from deployment/scripts, go up two levels
         echo "$(dirname "$(dirname "$script_dir")")"
     elif [[ "$script_dir" == *"/scripts" ]]; then
+        # If called from scripts, go up one level  
         echo "$(dirname "$script_dir")"
     else
+        # If called from project root
         echo "$script_dir"
     fi
 }
