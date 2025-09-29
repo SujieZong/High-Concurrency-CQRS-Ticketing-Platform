@@ -20,6 +20,14 @@ write model, and MySQL (via Spring Data JPA) stores the read model.
     - Spin up Redis, Kafka, MySQL, DynamoDB Local, and all microservices in one command
 - [DONE] Unified DynamoDB schema with -sharedDb for multi-service testing
 
+## TODO
+
+- **Virtual Thread Integration**: Multi-threaded purchase and Kafka consumer processing optimization
+- **Search Page**: Event search and filtering functionality  
+- **Login System**: User authentication with JWT
+- **Shopping Cart**: Temporary seat hold with payment verification
+- **Frontend Management**: Ticket selection area and admin interface
+
 ### Architecture Diagram
 
 ```mermaid
@@ -167,10 +175,3 @@ docker compose -f deployment/docker-compose.yml down
         }
         ```
 
-## TODO
-- Ticket select Area front end & Front end management service
-- Update RabbitMQ to Kafka, better concurrency and persistent support
-- Shopping Cart & Ticket Hold
-  - Hold space for consumer while making payment
-  - Payment verification
-  - Undo Purchase, release seat hold.

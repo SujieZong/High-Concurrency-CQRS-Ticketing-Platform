@@ -80,14 +80,14 @@ fi
 log_info "Build completed"
 
 # Load cluster ID from build script
-if [[ -f "$ROOT/deployment/.env" ]]; then
-    source "$ROOT/deployment/.env"
+if [[ -f "$ROOT/.env" ]]; then
+    source "$ROOT/.env"
 fi
 
 # === DEPLOYMENT PHASE ===
 log_step "=== Starting Deployment Phase ==="
 log_step "Starting all services via Docker Compose..."
-docker compose -f deployment/docker-compose.yml up --build -d
+docker compose up --build -d
 
 # === DATABASE SETUP PHASE ===
 log_step "=== Starting Database Setup Phase ==="
