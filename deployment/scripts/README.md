@@ -7,8 +7,8 @@
 
 **Features**:
 - Orchestrates build, deployment, database setup, and Kafka configuration
-- **Default mode**: `./localDockerInitiate.sh` (verbose output)
-- **Quiet mode**: `./localDockerInitiate.sh --quiet` (minimal output)
+- **Default mode**: `./localDockerInitiate.sh` (standard output)
+- **Verbose mode**: `./localDockerInitiate.sh --verbose` (detailed output)
 - **Environment switching**: `./localDockerInitiate.sh --env <local|aws|prod>`
 - **Help**: `./localDockerInitiate.sh --help`
 
@@ -21,7 +21,7 @@
 - Generates Kafka Cluster ID (prefers local `uuidgen`)
 - Cleans old containers
 - Always performs clean build to ensure code changes take effect
-- **Usage**: `bash scripts/build.sh [--quiet]`
+- **Usage**: `bash scripts/build.sh [--verbose]`
 
 ### `setup-dynamodb.sh` - Database Setup
 **Purpose**: Creates and configures DynamoDB tables
@@ -31,7 +31,7 @@
 - Creates `Tickets` and `OutboxEvent` tables
 - Verifies table creation success
 - Detects existing tables to avoid duplicates
-- **Usage**: `bash scripts/setup-dynamodb.sh [--quiet]`
+- **Usage**: `bash scripts/setup-dynamodb.sh [--verbose]`
 
 ### `switch-env.sh` - Environment Switcher
 **Purpose**: Switches between deployment environments
@@ -82,16 +82,16 @@
 
 # Deploy with specific environment
 ./localDockerInitiate.sh --env local
-./localDockerInitiate.sh --env aws --quiet
+./localDockerInitiate.sh --env aws --verbose
 ```
 
 ### Individual Operations
 ```bash
 # Build services only
-bash deployment/scripts/build.sh [--quiet]
+bash deployment/scripts/build.sh [--verbose]
 
 # Setup database only
-bash deployment/scripts/setup-dynamodb.sh [--quiet]
+bash deployment/scripts/setup-dynamodb.sh [--verbose]
 
 # Switch environment
 bash deployment/scripts/switch-env.sh <local|aws|prod>
