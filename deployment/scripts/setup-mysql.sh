@@ -25,20 +25,42 @@ else
     log_warning ".env file not found, using default values"
 fi
 
-# MySQL configuration - read from environment variables
-MYSQL_HOST="${MYSQL_HOST:-host.docker.internal}"
-MYSQL_PORT="${MYSQL_PORT:-3306}"
-MYSQL_USER="${SPRING_DATASOURCE_USERNAME:-root}"
-MYSQL_PASSWORD="${SPRING_DATASOURCE_PASSWORD:-root}"
-DATABASE_NAME="ticket_platform"
+# MySQL configuration
+MYSQL_CONTAINER="${MYSQL_CONTAINER:-mysql-ticketing}"
+MYSQL_USER="${MYSQL_USER:-root}"
+MYSQL_PASSWORD="${MYSQL_PASSWORD:-root}"
+DATABASE_NAME="${DATABASE_NAME:-ticket_platform}"
 SCHEMA_FILE="$SCRIPT_DIR/../../MqProjectionService/src/main/resources/schema.sql"
 
-# Function to execute MySQL commands with environment variable
+# Function to execute MySQL commands inside the container
 mysql_exec() {
-    MYSQL_PWD="$MYSQL_PASSWORD" mysql -h"$MYSQL_HOST" -P"$MYSQL_PORT" -u"$MYSQL_USER" "$@"
+    docker exec -i "$MYSQL_CONTAINER" mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$@" 2>/dev/null
 }
 
-# Function to wait for MySQL to be ready
+# Function to wait for MySQL container to be ready
+wait_for_mysql() {
+    log_info "Waiting for MySQL container '$MYSQL_CONTAINER' to be ready..."
+    local max_attempts=15
+    local attempt=1
+    
+    while [[ $attempt -le $max_attempts ]]; do
+        if docker ps --format "{{.Names}}" | grep -q "^${MYSQL_CONTAINER}$"; then
+            if mysql_exec -e "SELECT 1;" >/dev/null 2>&1; then
+                log_info "MySQL is ready!"
+                return 0
+            fi
+        fi
+        
+        log_info "Attempt $attempt/$max_attempts: MySQL not ready yet..."
+        sleep 2
+        ((attempt++))
+    done
+    
+    log_warning "MySQL failed to start after $max_attempts attempts"
+    return 1
+}
+
+# Function to wait for MySQL container to be ready
 wait_for_mysql() {
     log_info "Waiting for MySQL to be ready..."
     local max_attempts=15
@@ -73,21 +95,34 @@ create_database() {
     log_success "Database '${DATABASE_NAME}' created successfully"
 }
 
-# Function to create tables from schema
+# Function to create tables from schema file
 create_tables() {
-    log_info "Creating MySQL tables from schema..."
+    log_info "Creating tables from schema file..."
     
-    # Check if tables already exist
-    local table_count
-    table_count=$(mysql_exec -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '${DATABASE_NAME}';" 2>/dev/null | tail -1)
+    if [[ ! -f "$SCHEMA_FILE" ]]; then
+        log_error "Schema file not found: $SCHEMA_FILE"
+        return 1
+    fi
     
-    if [[ "$table_count" -gt 0 ]]; then
-        log_info "Database '${DATABASE_NAME}' already has $table_count tables, skipping schema creation"
+    # Check if key tables already exist
+    log_info "Checking for existing tables..."
+    local table_check
+    table_check=$(mysql_exec "$DATABASE_NAME" -e "SHOW TABLES LIKE 'venue';" 2>/dev/null)
+    
+    if [[ -n "$table_check" ]]; then
+        log_info "Tables already exist, skipping schema creation"
         return 0
     fi
     
-    mysql_exec "${DATABASE_NAME}" < "$SCHEMA_FILE" 2>/dev/null
-    log_success "Tables created successfully from schema"
+    # Execute schema file inside MySQL container
+    log_info "No existing tables found, creating from schema..."
+    if docker exec -i "$MYSQL_CONTAINER" mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$DATABASE_NAME" < "$SCHEMA_FILE" 2>/dev/null; then
+        log_info "Tables created successfully!"
+        return 0
+    else
+        log_error "Failed to create tables from schema file"
+        return 1
+    fi
 }
 
 # Function to verify table creation and status
@@ -141,7 +176,7 @@ setup_mysql() {
     
     # Show connection info (without password) in verbose mode
     if [[ "$VERBOSE_MODE" == true ]]; then
-        log_info "MySQL connection: ${MYSQL_USER}@${MYSQL_HOST}:${MYSQL_PORT}"
+        log_info "MySQL connection: ${MYSQL_USER}@${MYSQL_CONTAINER} (Docker container)"
     fi
     
     # Wait for MySQL to be ready
