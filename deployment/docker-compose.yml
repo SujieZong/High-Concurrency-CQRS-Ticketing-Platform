@@ -1,4 +1,3 @@
-# docker-compose.yml 放在项目根目录，与 TicketingPlatform/、RabbitCombinedConsumer/ 平级
 networks:
   ticketing-net: { }
 
@@ -32,93 +31,76 @@ services:
       start_period: 30s
     networks: [ ticketing-net ]
 
-  # RabbitMQ - Currently commented out, system migrated to Kafka
-  # rabbitmq:
-  #   image: rabbitmq:3-management
-  #   ports:
-  #     - "5672:5672"
-  #     - "15672:15672"
-  #   environment:
-  #     RABBITMQ_DEFAULT_USER: guest
-  #     RABBITMQ_DEFAULT_PASS: guest
-  #   healthcheck:
-  #     test: [ "CMD", "rabbitmqctl", "status" ]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-  #   networks: [ ticketing-net ]
-
-
   kafka-1:
-    image: bitnami/kafka:latest
+    image: confluentinc/cp-kafka:latest
     container_name: kafka-1
     environment:
-      - KAFKA_CFG_PROCESS_ROLES=broker,controller
-      - KAFKA_CFG_NODE_ID=1
-      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka-1:9092
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
-      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
-      - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=3
-      - KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=3
-      - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=2
-      - KAFKA_CFG_MIN_INSYNC_REPLICAS=2
-      - KAFKA_KRAFT_CLUSTER_ID=${CLUSTER_ID}
+      - KAFKA_NODE_ID=1
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka-1:9092
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      - KAFKA_PROCESS_ROLES=broker,controller
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=3
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=3
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=2
+      - KAFKA_MIN_INSYNC_REPLICAS=2
+      - CLUSTER_ID=${CLUSTER_ID}
     networks: [ ticketing-net ]
     healthcheck:
-      test: [ "CMD-SHELL", "/opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1" ]
+      test: [ "CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list >/dev/null 2>&1" ]
       interval: 5s
       timeout: 3s
       retries: 30
       start_period: 20s
 
   kafka-2:
-    image: bitnami/kafka:latest
+    image: confluentinc/cp-kafka:latest
     container_name: kafka-2
     environment:
-      - KAFKA_CFG_PROCESS_ROLES=broker,controller
-      - KAFKA_CFG_NODE_ID=2
-      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka-2:9092
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
-      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
-      - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=3
-      - KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=3
-      - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=2
-      - KAFKA_CFG_MIN_INSYNC_REPLICAS=2
-      - KAFKA_KRAFT_CLUSTER_ID=${CLUSTER_ID}
+      - KAFKA_NODE_ID=2
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka-2:9092
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      - KAFKA_PROCESS_ROLES=broker,controller
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=3
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=3
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=2
+      - KAFKA_MIN_INSYNC_REPLICAS=2
+      - CLUSTER_ID=${CLUSTER_ID}
     networks: [ ticketing-net ]
     healthcheck:
-      test: [ "CMD-SHELL", "/opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1" ]
+      test: [ "CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list >/dev/null 2>&1" ]
       interval: 5s
       timeout: 3s
       retries: 30
       start_period: 20s
 
   kafka-3:
-    image: bitnami/kafka:latest
+    image: confluentinc/cp-kafka:latest
     container_name: kafka-3
     environment:
-      - KAFKA_CFG_PROCESS_ROLES=broker,controller
-      - KAFKA_CFG_NODE_ID=3
-      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka-3:9092
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
-      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
-      - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=3
-      - KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=3
-      - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=2
-      - KAFKA_CFG_MIN_INSYNC_REPLICAS=2
-      - KAFKA_KRAFT_CLUSTER_ID=${CLUSTER_ID}
+      - KAFKA_NODE_ID=3
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka-3:9092
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      - KAFKA_PROCESS_ROLES=broker,controller
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=3
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=3
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=2
+      - KAFKA_MIN_INSYNC_REPLICAS=2
+      - CLUSTER_ID=${CLUSTER_ID}
     networks: [ ticketing-net ]
     healthcheck:
-      test: [ "CMD-SHELL", "/opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1" ]
+      test: [ "CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list >/dev/null 2>&1" ]
       interval: 5s
       timeout: 3s
       retries: 30
@@ -169,28 +151,11 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
 
-      # RabbitMQ - Currently commented out, system migrated to Kafka
-      # SPRING_RABBITMQ_HOST: rabbitmq
-      # SPRING_RABBITMQ_PORT: 5672
-      # SPRING_RABBITMQ_USERNAME: guest
-      # SPRING_RABBITMQ_PASSWORD: guest
-
       # DynamoDB Local
       AWS_DYNAMODB_END_POINT: http://dynamodb:8000
       AWS_DYNAMODB_REGION: us-west-2
       AWS_DYNAMODB_ACCESS_KEY: id
       AWS_DYNAMODB_ACCESS_PASS: key
-
-      # MySQL configuration removed - PurchaseService uses DynamoDB + Redis only
-      # SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
-      # SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
-      # SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-      # SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
-
-      # Hikari pool setting - removed as not using JDBC
-      # SPRING_DS_MIN_IDLE: 5
-      # SPRING_DS_MAX_POOL: 20
-      # SPRING_DS_CONN_TIMEOUT: 30000
 
     depends_on:
       redis: { condition: service_healthy }
@@ -251,12 +216,6 @@ services:
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
-
-      # RabbitMQ - Currently commented out, system migrated to Kafka
-      # SPRING_RABBITMQ_HOST: rabbitmq
-      # SPRING_RABBITMQ_PORT: 5672
-      # SPRING_RABBITMQ_USERNAME: guest
-      # SPRING_RABBITMQ_PASSWORD: guest
 
       # MySQL
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}

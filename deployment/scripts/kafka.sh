@@ -38,7 +38,7 @@ wait_for_kafka() {
     
     while [[ $attempt -le $max_attempts ]]; do
         if docker ps --format "{{.Names}}" | grep -q "^${KAFKA_CONTAINER}$"; then
-            if kafka_cmd kafka-topics.sh --list --bootstrap-server "$KAFKA_BOOTSTRAP_SERVERS" >/dev/null 2>&1; then
+            if kafka_cmd topics --list --bootstrap-server "$KAFKA_BOOTSTRAP_SERVERS" >/dev/null 2>&1; then
                 log_info "Kafka cluster is ready!"
                 return 0
             fi
@@ -67,7 +67,7 @@ kafka_cmd() {
         exit 1
     fi
     
-    docker exec -it "$KAFKA_CONTAINER" /opt/bitnami/kafka/bin/"$@"
+    docker exec -it "$KAFKA_CONTAINER" kafka-"$@"
 }
 
 case "${1:-help}" in
@@ -86,7 +86,7 @@ case "${1:-help}" in
             fi
             
             # Delete existing topic first to avoid conflicts (ignore errors)
-            kafka_cmd kafka-topics.sh \
+            kafka_cmd topics \
                 --delete \
                 --topic "$TOPIC_NAME" \
                 --bootstrap-server "$KAFKA_BOOTSTRAP_SERVERS" >/dev/null 2>&1 || true
@@ -94,7 +94,7 @@ case "${1:-help}" in
             # Create topic
             log_info "Creating Kafka topic: $TOPIC_NAME with $PARTITIONS partitions and replication factor $REPLICATION_FACTOR"
             
-            if kafka_cmd kafka-topics.sh \
+            if kafka_cmd topics \
                 --create \
                 --topic "$TOPIC_NAME" \
                 --partitions "$PARTITIONS" \
@@ -103,7 +103,7 @@ case "${1:-help}" in
                 --if-not-exists >/dev/null 2>&1; then
                 
                 # Verify topic creation
-                if kafka_cmd kafka-topics.sh \
+                if kafka_cmd topics \
                     --describe \
                     --topic "$TOPIC_NAME" \
                     --bootstrap-server "$KAFKA_BOOTSTRAP_SERVERS" >/dev/null 2>&1; then
@@ -112,7 +112,7 @@ case "${1:-help}" in
                     if [[ "$VERBOSE_MODE" == true ]]; then
                         # Show topic details in verbose mode
                         log_info "Topic details:"
-                        kafka_cmd kafka-topics.sh \
+                        kafka_cmd topics \
                             --describe \
                             --topic "$TOPIC_NAME" \
                             --bootstrap-server "$KAFKA_BOOTSTRAP_SERVERS"
@@ -144,7 +144,7 @@ case "${1:-help}" in
             log_info "Creating Kafka topic: $TOPIC_NAME with $PARTITIONS partitions and replication factor $REPLICATION_FACTOR"
             
             # Create topic
-            if kafka_cmd kafka-topics.sh \
+            if kafka_cmd topics \
                 --create \
                 --topic "$TOPIC_NAME" \
                 --partitions "$PARTITIONS" \
@@ -153,7 +153,7 @@ case "${1:-help}" in
                 --if-not-exists >/dev/null 2>&1; then
                 
                 # Verify topic creation
-                if kafka_cmd kafka-topics.sh \
+                if kafka_cmd topics \
                     --describe \
                     --topic "$TOPIC_NAME" \
                     --bootstrap-server "$KAFKA_BOOTSTRAP_SERVERS" >/dev/null 2>&1; then
@@ -169,7 +169,7 @@ case "${1:-help}" in
         else
             # List topics: ./kafka.sh topics
             log_info "Listing Kafka topics:"
-            kafka_cmd kafka-topics.sh \
+            kafka_cmd topics \
                 --list \
                 --bootstrap-server "$KAFKA_BOOTSTRAP_SERVERS"
         fi
@@ -178,7 +178,7 @@ case "${1:-help}" in
     "ps"|"status")
         # Show topic details
         log_info "Kafka topic details:"
-        kafka_cmd kafka-topics.sh \
+        kafka_cmd topics \
             --describe \
             --bootstrap-server "$KAFKA_BOOTSTRAP_SERVERS"
         ;;
@@ -188,7 +188,7 @@ case "${1:-help}" in
         if [[ $# -eq 2 ]]; then
             TOPIC_NAME="$2"
             log_info "Starting consumer for topic: $TOPIC_NAME"
-            kafka_cmd kafka-console-consumer.sh \
+            kafka_cmd console-consumer \
                 --topic "$TOPIC_NAME" \
                 --bootstrap-server "$KAFKA_BOOTSTRAP_SERVERS" \
                 --from-beginning
@@ -203,7 +203,7 @@ case "${1:-help}" in
         if [[ $# -eq 2 ]]; then
             TOPIC_NAME="$2"
             log_info "Starting producer for topic: $TOPIC_NAME (Type messages and press Enter)"
-            kafka_cmd kafka-console-producer.sh \
+            kafka_cmd console-producer \
                 --topic "$TOPIC_NAME" \
                 --bootstrap-server "$KAFKA_BOOTSTRAP_SERVERS"
         else
@@ -217,7 +217,7 @@ case "${1:-help}" in
         if [[ $# -eq 2 ]]; then
             TOPIC_NAME="$2"
             log_warning "Deleting Kafka topic: $TOPIC_NAME"
-            kafka_cmd kafka-topics.sh \
+            kafka_cmd topics \
                 --delete \
                 --topic "$TOPIC_NAME" \
                 --bootstrap-server "$KAFKA_BOOTSTRAP_SERVERS"
