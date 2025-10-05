@@ -31,6 +31,7 @@ MYSQL_USER="${MYSQL_USER:-root}"
 MYSQL_PASSWORD="${MYSQL_PASSWORD:-root}"
 DATABASE_NAME="${DATABASE_NAME:-ticket_platform}"
 SCHEMA_FILE="$SCRIPT_DIR/../../MqProjectionService/src/main/resources/schema.sql"
+DATA_FILE="$SCRIPT_DIR/../../MqProjectionService/src/main/resources/data.sql"
 
 # Function to execute MySQL commands inside the container
 mysql_exec() {
@@ -125,6 +126,42 @@ create_tables() {
     fi
 }
 
+# Function to insert default data
+insert_default_data() {
+    log_info "Inserting default data..."
+    
+    if [[ ! -f "$DATA_FILE" ]]; then
+        log_warning "Data file not found: $DATA_FILE, skipping data insertion"
+        return 0
+    fi
+    
+    # Check if we already have venues
+    local venue_count
+    venue_count=$(mysql_exec "$DATABASE_NAME" -e "SELECT COUNT(*) FROM venue;" 2>/dev/null | tail -1)
+    
+    if [[ "$venue_count" -gt 0 ]]; then
+        log_info "Default data already exists ($venue_count venues found), skipping data insertion"
+        return 0
+    fi
+    
+    # Execute data file inside MySQL container
+    log_info "Inserting default venues, zones, and events..."
+    if docker exec -i "$MYSQL_CONTAINER" mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$DATABASE_NAME" < "$DATA_FILE" 2>/dev/null; then
+        log_info "Default data inserted successfully!"
+        
+        # Show inserted data summary
+        local venues=$(mysql_exec "$DATABASE_NAME" -e "SELECT COUNT(*) FROM venue;" 2>/dev/null | tail -1)
+        local zones=$(mysql_exec "$DATABASE_NAME" -e "SELECT COUNT(*) FROM zone;" 2>/dev/null | tail -1)
+        local events=$(mysql_exec "$DATABASE_NAME" -e "SELECT COUNT(*) FROM event;" 2>/dev/null | tail -1)
+        log_info "Data summary: $venues venues, $zones zones, $events events"
+        
+        return 0
+    else
+        log_error "Failed to insert default data"
+        return 1
+    fi
+}
+
 # Function to verify table creation and status
 verify_mysql_tables() {
     log_info "Verifying MySQL tables..."
@@ -169,6 +206,10 @@ setup_mysql() {
         exit 1
     fi
     
+    if [[ ! -f "$DATA_FILE" ]]; then
+        log_warning "Data file not found: $DATA_FILE, will skip data insertion"
+    fi
+    
     if ! command -v mysql >/dev/null 2>&1; then
         log_failed "MySQL client is not installed or not in PATH"
         exit 1
@@ -187,6 +228,9 @@ setup_mysql() {
     # Create database and tables
     create_database
     create_tables
+    
+    # Insert default data
+    insert_default_data
     
     # Verify tables were created successfully
     if ! verify_mysql_tables; then
