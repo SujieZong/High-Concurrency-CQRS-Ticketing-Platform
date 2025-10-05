@@ -40,29 +40,6 @@ mysql_exec() {
 
 # Function to wait for MySQL container to be ready
 wait_for_mysql() {
-    log_info "Waiting for MySQL container '$MYSQL_CONTAINER' to be ready..."
-    local max_attempts=15
-    local attempt=1
-    
-    while [[ $attempt -le $max_attempts ]]; do
-        if docker ps --format "{{.Names}}" | grep -q "^${MYSQL_CONTAINER}$"; then
-            if mysql_exec -e "SELECT 1;" >/dev/null 2>&1; then
-                log_info "MySQL is ready!"
-                return 0
-            fi
-        fi
-        
-        log_info "Attempt $attempt/$max_attempts: MySQL not ready yet..."
-        sleep 2
-        ((attempt++))
-    done
-    
-    log_warning "MySQL failed to start after $max_attempts attempts"
-    return 1
-}
-
-# Function to wait for MySQL container to be ready
-wait_for_mysql() {
     log_info "Waiting for MySQL to be ready..."
     local max_attempts=15
     local attempt=1
@@ -208,11 +185,6 @@ setup_mysql() {
     
     if [[ ! -f "$DATA_FILE" ]]; then
         log_warning "Data file not found: $DATA_FILE, will skip data insertion"
-    fi
-    
-    if ! command -v mysql >/dev/null 2>&1; then
-        log_failed "MySQL client is not installed or not in PATH"
-        exit 1
     fi
     
     # Show connection info (without password) in verbose mode
