@@ -80,5 +80,5 @@ else
   -- setBitResult == 1 means seat already taken
   redis.log(redis.LOG_WARNING,
           "[Lua] race condition detected: seat became occupied between checks")
-  return 1  -- 座位已被占用
+  return 1  -- seat taken already
 end

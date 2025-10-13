@@ -1,0 +1,51 @@
+events:
+  auto-initialize: true
+  list:
+    - event-id: "Event1"
+      name: "Event1"
+      type: "Sports"
+      date: "2025-12-15"
+      venue-id: "Venue1"
+      enabled: true
+
+    - event-id: "Event2"
+      name: "Event2"
+      type: "Sports"
+      date: "2025-11-20"
+      venue-id: "Venue1"
+      enabled: true
+
+    - event-id: "Event3"
+      name: "Event3"
+      type: "Concert"
+      date: "2025-10-25"
+      venue-id: "Venue2"
+      enabled: true
+
+    - event-id: "Event4"
+      name: "Event4"
+      type: "Concert"
+      date: "2025-11-05"
+      venue-id: "Venue2"
+      enabled: true
+
+    - event-id: "Event5"
+      name: "Event5"
+      type: "Theater"
+      date: "2025-10-30"
+      venue-id: "Venue3"
+      enabled: true
+
+    - event-id: "Event6"
+      name: "Event6"
+      type: "Conference"
+      date: "2025-11-10"
+      venue-id: "Venue4"
+      enabled: true
+
+    - event-id: "Event7"
+      name: "Event7"
+      type: "Festival"
+      date: "2025-07-15"
+      venue-id: "Venue5"
+      enabled: true
