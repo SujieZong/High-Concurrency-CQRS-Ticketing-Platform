@@ -36,13 +36,6 @@ spring:
                 batch.size: 65536
                 delivery.timeout.ms: 120000
 
-  # RabbitMQ configuration commented out - system migrated to Kafka
-  # rabbitmq:
-  #   host: ${SPRING_RABBITMQ_HOST}
-  #   port: ${SPRING_RABBITMQ_PORT:5672}
-  #   username: ${SPRING_RABBITMQ_USERNAME}
-  #   password: ${SPRING_RABBITMQ_PASSWORD}
-
   data:
     redis:
       host: ${SPRING_DATA_REDIS_HOST}
@@ -79,3 +72,8 @@ logging:
 tickets:
   bootstrap:
     venue-redis: ${TICKETS_BOOTSTRAP_VENUE_REDIS:true}
+
+# Import business configuration
+spring:
+  config:
+    import: classpath:businessConfig.yml
