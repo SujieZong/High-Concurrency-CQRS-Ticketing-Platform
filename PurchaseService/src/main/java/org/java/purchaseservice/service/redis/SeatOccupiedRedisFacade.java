@@ -48,24 +48,27 @@ public class SeatOccupiedRedisFacade {
 		String bitmapKey = RedisKeyUtil.getZoneBitMapKey(eventId, zoneId);
 		String zoneRemainKey = RedisKeyUtil.getZoneRemainedSeats(eventId, zoneId);
 		String rowRemainKey = RedisKeyUtil.getRowRemainedSeats(eventId, zoneId, rowIndex);
-		log.trace("[SeatOccupiedRedisFacade] Lua keys: bitmap={}, zoneRem={}, rowRem={}, bitPos={}",
-				bitmapKey, zoneRemainKey, rowRemainKey, bitPos);
+		String eventUsedKey = RedisKeyUtil.getEventUsedSeatsKey(eventId);
+		String eventTotalKey = RedisKeyUtil.getEventTotalCapacityKey(eventId);
+		log.trace(
+				"[SeatOccupiedRedisFacade] Lua keys: bitmap={}, zoneRem={}, rowRem={}, eventUsed={}, eventTotal={}, bitPos={}",
+				bitmapKey, zoneRemainKey, rowRemainKey, eventUsedKey, eventTotalKey, bitPos);
 
 		Long res;
 		try {
 			res = stringRedisTemplate.execute(
 					tryOccupySeatScript,
-					List.of(bitmapKey, zoneRemainKey, rowRemainKey),
+					List.of(bitmapKey, zoneRemainKey, rowRemainKey, eventUsedKey, eventTotalKey),
 					String.valueOf(bitPos));
 			log.debug("[SeatOccupiedRedisFacade] Lua script execution returned: {}", res);
 
 		} catch (Exception ex) {
 			log.error("""
 					[SeatOccupiedRedisFacade] !!! Lua script execution FAILED !!!
-					  KEYS = [{}, {}, {}]
+					  KEYS = [{}, {}, {}, {}, {}]
 					  ARGV = [{}]
 					  Exception: {}""",
-					bitmapKey, zoneRemainKey, rowRemainKey, bitPos, ex.toString(), ex);
+					bitmapKey, zoneRemainKey, rowRemainKey, eventUsedKey, eventTotalKey, bitPos, ex.toString(), ex);
 			throw ex;
 		}
 
