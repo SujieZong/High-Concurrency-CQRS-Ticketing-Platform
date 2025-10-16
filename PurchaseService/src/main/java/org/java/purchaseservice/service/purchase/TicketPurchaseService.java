@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.UUID;
 
-//Service：ticketId/createdOn，Redis Occupation → Write Dynamo → Record Outbox record → return
+// Service: Generate ticketId/timestamp → Redis seat lock → Publish event to Kafka (event-sourced CQRS)
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -30,18 +30,22 @@ public class TicketPurchaseService implements TicketPurchaseServiceInterface {
 	private final SeatOccupiedRedisFacade seatOccupiedRedisFacade;
 	private final ApplicationEventPublisher eventPublisher;
 
-	//Persistent through Kafka by spring event
+	// Persistent through Kafka by spring event
 	@Override
 	@Transactional
 	public TicketRespondDTO purchaseTicket(TicketPurchaseRequestDTO dto) {
-		log.info("[TicketPurchaseService] purchaseTicket start: eventId={}, zone={}, row={}, col={}", dto.getEventId(), dto.getZoneId(), dto.getRow(), dto.getColumn());
+		log.info("[TicketPurchaseService] purchaseTicket start: eventId={}, zone={}, row={}, col={}", dto.getEventId(),
+				dto.getZoneId(), dto.getRow(), dto.getColumn());
 
 		// Part 1: Redis - Set Redis seat occupancy to a True - Lua script
 		try {
-			seatOccupiedRedisFacade.tryOccupySeat(dto.getEventId(), dto.getVenueId(), dto.getZoneId(), dto.getRow(), dto.getColumn());
-			log.debug("[TicketPurchaseService] seat occupied OK for eventId={}, seat={}-{}", dto.getEventId(), dto.getRow(), dto.getColumn());
+			seatOccupiedRedisFacade.tryOccupySeat(dto.getEventId(), dto.getVenueId(), dto.getZoneId(), dto.getRow(),
+					dto.getColumn());
+			log.debug("[TicketPurchaseService] seat occupied OK for eventId={}, seat={}-{}", dto.getEventId(),
+					dto.getRow(), dto.getColumn());
 		} catch (SeatOccupiedException e) {
-			log.warn("[TicketPurchaseService] seat already occupied: eventId={}, seat={}-{}", dto.getEventId(), dto.getRow(), dto.getColumn());
+			log.warn("[TicketPurchaseService] seat already occupied: eventId={}, seat={}-{}", dto.getEventId(),
+					dto.getRow(), dto.getColumn());
 			throw e;
 		}
 
@@ -50,17 +54,21 @@ public class TicketPurchaseService implements TicketPurchaseServiceInterface {
 		Instant now = Instant.now();
 
 		try {
-			// -- part 3 Write to DynamoDB -> construct DTO then write
-			TicketCreationDTO creation = TicketCreationDTO.builder().ticketId(ticketId).venueId(dto.getVenueId()).eventId(dto.getEventId()).zoneId(dto.getZoneId()).row(dto.getRow()).column(dto.getColumn()).status(TicketStatus.PAID).createdOn(now).build();
+			// -- Part 3: Construct ticket data model (not persisted in write service)
+			TicketCreationDTO creation = TicketCreationDTO.builder().ticketId(ticketId).venueId(dto.getVenueId())
+					.eventId(dto.getEventId()).zoneId(dto.getZoneId()).row(dto.getRow()).column(dto.getColumn())
+					.status(TicketStatus.PAID).createdOn(now).build();
 
-			//
+			// Build entity for event publishing (CQRS: event is the source of truth)
 			TicketInfo entity = ticketMapper.toEntity(creation);
 			entity.setTicketId(ticketId);
 			entity.setStatus(creation.getStatus());
 			entity.setCreatedOn(now);
 
-			// -- Part 4 -- Publish Spring Event, replace3 Outbox
-			TicketCreatedEvent event = TicketCreatedEvent.builder().ticketId(ticketId).venueId(dto.getVenueId()).eventId(dto.getEventId()).zoneId(dto.getZoneId()).row(dto.getRow()).column(dto.getColumn()).status(creation.getStatus()).createdOn(now).build();
+			// -- Part 4: Publish Spring Event to Kafka (event-sourced architecture)
+			TicketCreatedEvent event = TicketCreatedEvent.builder().ticketId(ticketId).venueId(dto.getVenueId())
+					.eventId(dto.getEventId()).zoneId(dto.getZoneId()).row(dto.getRow()).column(dto.getColumn())
+					.status(creation.getStatus()).createdOn(now).build();
 
 			eventPublisher.publishEvent(event);
 			log.info("[TicketPurchaseService] TicketCreatedEvent published: ticketId={}", ticketId);
@@ -78,10 +86,12 @@ public class TicketPurchaseService implements TicketPurchaseServiceInterface {
 	// Release seat from Redis
 	private void safeReleaseSeat(TicketPurchaseRequestDTO dto, String ticketId, Exception original) {
 		try {
-			seatOccupiedRedisFacade.releaseSeat(dto.getEventId(), dto.getVenueId(), dto.getZoneId(), dto.getRow(), dto.getColumn());
+			seatOccupiedRedisFacade.releaseSeat(dto.getEventId(), dto.getVenueId(), dto.getZoneId(), dto.getRow(),
+					dto.getColumn());
 			log.info("[TicketPurchaseService] seat released after failure, ticketId={}", ticketId);
 		} catch (Exception re) {
-			log.error("[TicketPurchaseService] seat release FAILED, ticketId={}, cause={}, releaseErr={}", ticketId, original.getMessage(), re.getMessage(), re);
+			log.error("[TicketPurchaseService] seat release FAILED, ticketId={}, cause={}, releaseErr={}", ticketId,
+					original.getMessage(), re.getMessage(), re);
 		}
 	}
 }

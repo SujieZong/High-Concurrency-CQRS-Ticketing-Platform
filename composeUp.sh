@@ -118,8 +118,8 @@ log_step "=== Starting Database Setup Phase ==="
 # Setup MySQL first (for QueryService and MqProjectionService)
 run_script "$MYSQL_SCRIPT" "MySQL setup"
 
-# Setup DynamoDB (for PurchaseService)  
-run_script "$DYNAMODB_SCRIPT" "DynamoDB setup"
+# # Setup DynamoDB (for PurchaseService)  
+# run_script "$DYNAMODB_SCRIPT" "DynamoDB setup"
 
 # === KAFKA SETUP PHASE ===
 log_step "=== Starting Kafka Setup Phase ==="

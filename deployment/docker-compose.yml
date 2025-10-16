@@ -119,22 +119,7 @@ services:
         condition: service_healthy
     networks: [ ticketing-net ]
 
-  dynamodb:
-    image: amazon/dynamodb-local
-    ports:
-      - "8000:8000"
-    command: [ "-jar","DynamoDBLocal.jar","-sharedDb" ] #share across regions
-    # could add volume here to make DynamoDB permanent
-    healthcheck:
-      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8000 || exit 1" ]
-      interval: 5s
-      timeout: 3s
-      retries: 30
-      start_period: 10s
-    networks: [ ticketing-net ]
-
   # —— API ——
-  # —— Purchase Service —— Redis, Dynamo, Kafka (RabbitMQ deprecated)
   purchase-service:
     networks: [ ticketing-net ]
     build:
@@ -151,16 +136,8 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
 
-      # DynamoDB Local - COMMENTED OUT FOR TESTING
-      #AWS_DYNAMODB_END_POINT: http://dynamodb:8000
-      #AWS_DYNAMODB_REGION: us-west-2
-      #AWS_DYNAMODB_ACCESS_KEY: id
-      #AWS_DYNAMODB_ACCESS_PASS: key
-
     depends_on:
       redis: { condition: service_healthy }
-      # rabbitmq: { condition: service_healthy }  # Commented out - migrated to Kafka
-      #dynamodb: { condition: service_healthy }    # Commented out for testing
       kafka-1: { condition: service_healthy }
       kafka-2: { condition: service_healthy }
       kafka-3: { condition: service_healthy }
@@ -223,9 +200,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
 
     depends_on:
-      # rabbitmq: { condition: service_healthy }  # Commented out - migrated to Kafka
       mysql: { condition: service_healthy }
-      # dynamodb: { condition: service_healthy }  # Commented out - DynamoDB dependency removed
       kafka-1: { condition: service_healthy }
       kafka-2: { condition: service_healthy }
       kafka-3: { condition: service_healthy }
