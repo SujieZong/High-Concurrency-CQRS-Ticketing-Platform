@@ -5,21 +5,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.java.purchaseservice.dto.TicketCreationDTO;
 import org.java.purchaseservice.dto.TicketPurchaseRequestDTO;
 import org.java.purchaseservice.dto.TicketRespondDTO;
+import org.java.purchaseservice.event.TicketCreatedEvent;
 import org.java.purchaseservice.exception.CreateTicketException;
 import org.java.purchaseservice.exception.SeatOccupiedException;
 import org.java.purchaseservice.mapper.TicketMapper;
 import org.java.purchaseservice.model.TicketInfo;
 import org.java.purchaseservice.model.TicketStatus;
-import org.java.purchaseservice.outbox.OutboxService;
-import org.java.purchaseservice.repository.DynamoTicketDaoInterface;
 import org.java.purchaseservice.service.TicketPurchaseServiceInterface;
 import org.java.purchaseservice.service.redis.SeatOccupiedRedisFacade;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 //Service：ticketId/createdOn，Redis Occupation → Write Dynamo → Record Outbox record → return
@@ -30,16 +28,15 @@ public class TicketPurchaseService implements TicketPurchaseServiceInterface {
 
 	private final TicketMapper ticketMapper;
 	private final SeatOccupiedRedisFacade seatOccupiedRedisFacade;
-	private final OutboxService outboxService;
-	private final DynamoTicketDaoInterface dynamoTicketDao;
+	private final ApplicationEventPublisher eventPublisher;
 
-	// transfer input data into a Response DTO object and save to Database through DAO and Mapper
+	//Persistent through Kafka by spring event
 	@Override
 	@Transactional
 	public TicketRespondDTO purchaseTicket(TicketPurchaseRequestDTO dto) {
 		log.info("[TicketPurchaseService] purchaseTicket start: eventId={}, zone={}, row={}, col={}", dto.getEventId(), dto.getZoneId(), dto.getRow(), dto.getColumn());
 
-		//Part 1: Redis - Set Redis seat occupancy to a True - Lua script
+		// Part 1: Redis - Set Redis seat occupancy to a True - Lua script
 		try {
 			seatOccupiedRedisFacade.tryOccupySeat(dto.getEventId(), dto.getVenueId(), dto.getZoneId(), dto.getRow(), dto.getColumn());
 			log.debug("[TicketPurchaseService] seat occupied OK for eventId={}, seat={}-{}", dto.getEventId(), dto.getRow(), dto.getColumn());
@@ -62,23 +59,11 @@ public class TicketPurchaseService implements TicketPurchaseServiceInterface {
 			entity.setStatus(creation.getStatus());
 			entity.setCreatedOn(now);
 
-			// -- Part 4 -- write into DynamoDB, Direct Write
-			dynamoTicketDao.createTicket(entity);
+			// -- Part 4 -- Publish Spring Event, replace3 Outbox
+			TicketCreatedEvent event = TicketCreatedEvent.builder().ticketId(ticketId).venueId(dto.getVenueId()).eventId(dto.getEventId()).zoneId(dto.getZoneId()).row(dto.getRow()).column(dto.getColumn()).status(creation.getStatus()).createdOn(now).build();
 
-			//-- Part 5 --  for Outbox event recording
-			Map<String, Object> event = new HashMap<>();
-			event.put("ticketId", ticketId);
-			event.put("venueId", dto.getVenueId());
-			event.put("eventId", dto.getEventId());
-			event.put("zoneId", dto.getZoneId());
-			event.put("row", dto.getRow());
-			event.put("column", dto.getColumn());
-			event.put("status", creation.getStatus());
-			event.put("createdOn", now.toString());
-
-			//serialize and send to outbox
-			String outboxId = outboxService.saveEvent("ticket.created", event, ticketId);
-			log.info("Outbox event saved. outboxId={}, ticketId={}", outboxId, ticketId);
+			eventPublisher.publishEvent(event);
+			log.info("[TicketPurchaseService] TicketCreatedEvent published: ticketId={}", ticketId);
 
 			// direct return
 			return ticketMapper.toRespondDto(entity);
@@ -89,7 +74,6 @@ public class TicketPurchaseService implements TicketPurchaseServiceInterface {
 			throw new CreateTicketException("Failed to create ticket", ex);
 		}
 	}
-
 
 	// Release seat from Redis
 	private void safeReleaseSeat(TicketPurchaseRequestDTO dto, String ticketId, Exception original) {
