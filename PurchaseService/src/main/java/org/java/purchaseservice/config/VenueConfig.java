@@ -3,6 +3,7 @@ package org.java.purchaseservice.config;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
 import jakarta.validation.Valid;
@@ -12,12 +13,13 @@ import java.util.Map;
 
 /**
  * Configuration for venue management with Map-based O(1) lookup.
- * Loads from application.yml venues section.
+ * Loads from venues.yml file.
  */
 @Data
 @Configuration
 @Validated
 @ConfigurationProperties(prefix = "venues")
+@PropertySource(value = "classpath:venues.yml", factory = YamlPropertySourceFactory.class)
 public class VenueConfig {
 
     /**

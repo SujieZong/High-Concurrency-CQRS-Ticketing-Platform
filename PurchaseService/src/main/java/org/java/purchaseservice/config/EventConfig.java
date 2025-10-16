@@ -3,20 +3,21 @@ package org.java.purchaseservice.config;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.validation.annotation.Validated;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 
 /**
- * Event configuration loaded from application.yml events section.
+ * Event configuration loaded from events.yml file.
  */
 @Data
 @Configuration
 @Validated
 @ConfigurationProperties(prefix = "events")
+@PropertySource(value = "classpath:events.yml", factory = YamlPropertySourceFactory.class)
 public class EventConfig {
 
     /**
@@ -27,7 +28,6 @@ public class EventConfig {
     /**
      * List of configured events.
      */
-    @NotEmpty(message = "Events list cannot be empty")
     @Valid
     private List<Event> list;
 
