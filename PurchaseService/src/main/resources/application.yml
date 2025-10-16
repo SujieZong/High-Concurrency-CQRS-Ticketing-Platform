@@ -14,7 +14,7 @@ spring:
       bindings:
         #Sender bind channel
         ticket-out-0:
-          destination: ticket.exchange
+          destination: ticket.exchange  # Kafka Topic
           contentType: application/json
           producer:
             partitionKeyExpression: headers['partitionKey']  # use header's partitionKey
@@ -49,18 +49,9 @@ spring:
           min-idle: ${SPRING_DATA_REDIS_POOL_MIN_IDLE:0}
           max-wait: ${SPRING_DATA_REDIS_POOL_MAX_WAIT:-1ms}
 
-# DynamoDB configuration - COMMENTED OUT FOR TESTING
-#app:
-#  dynamo:
-#    table:
-#      outbox: OutboxEvent
-#
-#aws:
-#  dynamodb:
-#    region: ${AWS_DYNAMODB_REGION}
-#    end-point: ${AWS_DYNAMODB_END_POINT}
-#    access-key: ${AWS_DYNAMODB_ACCESS_KEY}
-#    access-pass: ${AWS_DYNAMODB_ACCESS_PASS}
+kafka:
+  binding:
+    ticket-out: ticket-out-0  # Spring Cloud Stream binding
 
 logging:
   file:
@@ -74,7 +65,3 @@ tickets:
   bootstrap:
     venue-redis: ${TICKETS_BOOTSTRAP_VENUE_REDIS:true}
 
-# Import business configuration
-spring:
-  config:
-    import: classpath:businessConfig.yml
