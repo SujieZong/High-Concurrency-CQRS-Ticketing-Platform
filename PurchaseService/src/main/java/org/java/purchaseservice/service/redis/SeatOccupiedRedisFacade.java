@@ -16,16 +16,15 @@ import java.util.List;
 @Slf4j
 public class SeatOccupiedRedisFacade {
 	private final VenueConfigService venueConfigService;
-	private final DefaultRedisScript<Long> tryOccupySeatScript; //load lua script method
-	private final DefaultRedisScript<Long> tryReleaseSeatScript; //load lua script method
+	private final DefaultRedisScript<Long> tryOccupySeatScript; // load lua script method
+	private final DefaultRedisScript<Long> tryReleaseSeatScript; // load lua script method
 	private final StringRedisTemplate stringRedisTemplate;
 
 	public SeatOccupiedRedisFacade(
 			VenueConfigService venueConfigService,
 			StringRedisTemplate stringRedisTemplate,
 			@Qualifier("tryOccupySeatScript") DefaultRedisScript<Long> tryOccupySeatScript,
-			@Qualifier("tryReleaseSeatScript") DefaultRedisScript<Long> tryReleaseSeatScript
-	) {
+			@Qualifier("tryReleaseSeatScript") DefaultRedisScript<Long> tryReleaseSeatScript) {
 		this.venueConfigService = venueConfigService;
 		this.stringRedisTemplate = stringRedisTemplate;
 		this.tryOccupySeatScript = tryOccupySeatScript;
@@ -49,34 +48,35 @@ public class SeatOccupiedRedisFacade {
 		String bitmapKey = RedisKeyUtil.getZoneBitMapKey(eventId, zoneId);
 		String zoneRemainKey = RedisKeyUtil.getZoneRemainedSeats(eventId, zoneId);
 		String rowRemainKey = RedisKeyUtil.getRowRemainedSeats(eventId, zoneId, rowIndex);
-		log.trace("[SeatOccupiedRedisFacade] Lua keys: bitmap={}, zoneRem={}, rowRem={}, bitPos={}",
-				bitmapKey, zoneRemainKey, rowRemainKey, bitPos);
+		String eventUsedKey = RedisKeyUtil.getEventUsedSeatsKey(eventId);
+		String eventTotalKey = RedisKeyUtil.getEventTotalCapacityKey(eventId);
+		log.trace(
+				"[SeatOccupiedRedisFacade] Lua keys: bitmap={}, zoneRem={}, rowRem={}, eventUsed={}, eventTotal={}, bitPos={}",
+				bitmapKey, zoneRemainKey, rowRemainKey, eventUsedKey, eventTotalKey, bitPos);
 
 		Long res;
 		try {
 			res = stringRedisTemplate.execute(
 					tryOccupySeatScript,
-					List.of(bitmapKey, zoneRemainKey, rowRemainKey),
+					List.of(bitmapKey, zoneRemainKey, rowRemainKey, eventUsedKey, eventTotalKey),
 					String.valueOf(bitPos));
 			log.debug("[SeatOccupiedRedisFacade] Lua script execution returned: {}", res);
 
 		} catch (Exception ex) {
 			log.error("""
-							[SeatOccupiedRedisFacade] !!! Lua script execution FAILED !!!
-							  KEYS = [{}, {}, {}]
-							  ARGV = [{}]
-							  Exception: {}""",
-					bitmapKey, zoneRemainKey, rowRemainKey, bitPos, ex.toString(), ex);
+					[SeatOccupiedRedisFacade] !!! Lua script execution FAILED !!!
+					  KEYS = [{}, {}, {}, {}, {}]
+					  ARGV = [{}]
+					  Exception: {}""",
+					bitmapKey, zoneRemainKey, rowRemainKey, eventUsedKey, eventTotalKey, bitPos, ex.toString(), ex);
 			throw ex;
 		}
 
-		if (res == null) {
-			throw new RuntimeException("Lua script processing failed.");
-		}
-
+		// Lua will either throw exception or return a number
 		switch (res.intValue()) {
 			case 0:
-				log.trace("[SeatOccupiedRedisFacade] Seat occupied successfully: event={}, venue={}, zone={}, row={}, col={}",
+				log.trace(
+						"[SeatOccupiedRedisFacade] Seat occupied successfully: event={}, venue={}, zone={}, row={}, col={}",
 						eventId, venueId, zoneId, row, col);
 				return;
 			case 1:
@@ -111,13 +111,11 @@ public class SeatOccupiedRedisFacade {
 		stringRedisTemplate.execute(
 				tryReleaseSeatScript,
 				List.of(bitmapKey, zoneRemainKey, rowRemainKey),
-				String.valueOf(bitPos)
-		);
+				String.valueOf(bitPos));
 
 		log.trace("[SeatOccupiedRedisFacade] Seat released: event={}, venue={}, zone={}, row={}, col={}",
 				eventId, venueId, zoneId, row, col);
 	}
-
 
 	private int calcBitPosition(String row, String col, int seatPerRow) {
 		int rowIndex = convertRowToIndex(row);

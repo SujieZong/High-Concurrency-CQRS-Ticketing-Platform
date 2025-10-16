@@ -10,25 +10,31 @@ spring:
 
   cloud:
     stream:
-      defaultBinder: rabbit
+      defaultBinder: kafka
       bindings:
         #Sender bind channel
         ticket-out-0:
-          destination: ticket.exchange
+          destination: ticket.exchange  # Kafka Topic
           contentType: application/json
-      rabbit:
+          producer:
+            partitionKeyExpression: headers['partitionKey']  # use header's partitionKey
+            partitionCount: 1  # Match current topic's partition count
+            requiredGroups: ticketSqlSync  # Ensure consumer group exists
+      kafka:
+        binder:
+          brokers: ${KAFKA_BROKERS:kafka-1:9092,kafka-2:9092,kafka-3:9092}
+          # Auto create topic with correct partitions
+          autoCreateTopics: true
+          autoAddPartitions: true
         bindings:
-          ticket-out-0:
+          ticket-out-0: #binding name
             producer:
-              exchangeType: topic
-              routingKeyExpression: '''ticket.created'''
-              declareExchange: true
-
-  rabbitmq:
-    host: ${SPRING_RABBITMQ_HOST}
-    port: ${SPRING_RABBITMQ_PORT:5672}
-    username: ${SPRING_RABBITMQ_USERNAME}
-    password: ${SPRING_RABBITMQ_PASSWORD}
+              configuration:
+                acks: all
+                enable.idempotence: true
+                linger.ms: 5
+                batch.size: 65536
+                delivery.timeout.ms: 120000
 
   data:
     redis:
@@ -36,8 +42,6 @@ spring:
       port: ${SPRING_DATA_REDIS_PORT:6379}
       password: ${SPRING_DATA_REDIS_PASSWORD:}
       timeout: ${SPRING_DATA_REDIS_TIMEOUT:5000}
-      repositories:
-        enabled: false
       lettuce:
         pool:
           max-active: ${SPRING_DATA_REDIS_POOL_MAX_ACTIVE:8}
@@ -45,27 +49,9 @@ spring:
           min-idle: ${SPRING_DATA_REDIS_POOL_MIN_IDLE:0}
           max-wait: ${SPRING_DATA_REDIS_POOL_MAX_WAIT:-1ms}
 
-  datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    hikari:
-      minimum-idle: ${SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE:5}
-      maximum-pool-size: ${SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE:20}
-      connection-timeout: ${SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT:30000}
-
-app:
-  dynamo:
-    table:
-      outbox: OutboxEvent
-
-aws:
-  dynamodb:
-    region: ${AWS_DYNAMODB_REGION}
-    end-point: ${AWS_DYNAMODB_END_POINT}
-    access-key: ${AWS_DYNAMODB_ACCESS_KEY}
-    access-pass: ${AWS_DYNAMODB_ACCESS_PASS}
+kafka:
+  binding:
+    ticket-out: ticket-out-0  # Spring Cloud Stream binding
 
 logging:
   file:
@@ -74,7 +60,7 @@ logging:
     root: INFO
     org.java.purchaseservice: DEBUG
 
-# 启动期是否向 Redis 预热场馆/座区（本地调试可关）
+# If warmup Redis with bootstrap value
 tickets:
   bootstrap:
     venue-redis: ${TICKETS_BOOTSTRAP_VENUE_REDIS:true}

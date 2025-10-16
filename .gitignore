@@ -2,6 +2,7 @@
 .idea/
 *.iml
 .vscode/
+.github/
 
 # ===== Build outputs =====
 target/
@@ -22,9 +23,21 @@ Thumbs.db
 **/.project
 **/.settings/
 
-# ===== Docker / Compose artifacts (可根据需要调整) =====
-**/.env
-**/*.env
+# ===== Environment files =====
+# Runtime environment files (contain actual credentials)
+.env
+.env.local
+.env.backup
+.env.personal
+
+deployment/.env
+deployment/.env.backup*
+deployment/.env.personal*
+
+# Keep these templates (safe to commit)
+!deployment/.env.template
+
+# ===== Docker / Compose artifacts =====
 **/.docker/
 **/.dockerignore
 
