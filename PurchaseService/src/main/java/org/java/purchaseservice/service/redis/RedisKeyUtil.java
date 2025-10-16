@@ -19,7 +19,7 @@ public class RedisKeyUtil {
 		return String.format("venue:%s", venueId);
 	}
 
-	//Bitmap related Key
+	// Bitmap related Key
 	public static String getZoneBitMapKey(String eventId, int zoneId) {
 		return String.format("event:%s:zone:%s:occupied", eventId, zoneId);
 	}
@@ -30,5 +30,14 @@ public class RedisKeyUtil {
 
 	public static String getRowRemainedSeats(String eventId, int zoneId, int rowIndex) {
 		return String.format("event:%s:zone:%s:row:%d:remainingSeats", eventId, zoneId, rowIndex);
+	}
+
+	// Event-level tracking keys
+	public static String getEventUsedSeatsKey(String eventId) {
+		return String.format("event:%s:usedSeats", eventId);
+	}
+
+	public static String getEventTotalCapacityKey(String eventId) {
+		return String.format("event:%s:totalCapacity", eventId);
 	}
 }

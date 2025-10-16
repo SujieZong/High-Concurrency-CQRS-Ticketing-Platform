@@ -3,23 +3,29 @@
 A ticket-purchasing backend designed for high contention and throughput.
 It uses CQRS to separate the write path (seat reservation and event emission) from the read path (queries and
 analytics).
-Redis + Lua performs O(1) atomic seat locks, RabbitMQ decouples user requests from persistence, DynamoDB stores the
-write model, and MySQL (via Spring Data JPA) stores the read model.
+Redis + Lua performs O(1) atomic seat locks, Kafka serves as the event store and message broker, and MySQL (via Spring Data JPA) stores the read model projection.
 
 ## Latest Updates
 
 **Latest Updates**
 
-- [DONE] Migrated JDBC → Spring Data JPA (read side / MySQL)
-    - Reduced boilerplate, improved transaction handling, and simplified testing.
-- [DONE] One-click local bring-up with Docker Compose
-    - Spins up Redis, RabbitMQ, MySQL, DynamoDB Local, and all service containers in one command
-- [DONE] Unified DynamoDB schema
-    - Standardized attribute names/types (e.g., zoneId, createdOn) across producer and consumer, removing schema drift
-      errors.
-- [DONE] DynamoDB Local with -sharedDb
-    - Shared local DB file across regions/accounts to prevent “written but cannot read” issues during multi-service
-      testing.
+- [DONE] Migrated read-side queries from JDBC to Spring Data JPA (MySQL)
+    - Reduced boilerplate code and improved transaction handling for complex queries
+    - Kept high-performance JDBC for speed critical writes
+- [DONE] Added Kafka to replace RabbitMQ for message streaming
+    - Better concurrency support and persistent message handling
+- [DONE] Modular deployment system with secure environment management
+- [DONE] One-click local deployment with Docker Compose
+    - Spin up Redis, Kafka, MySQL, and all microservices in one command
+- [DONE] Event-sourced CQRS architecture with Kafka as event store
+
+## TODO
+
+- **Virtual Thread Integration**: Multi-threaded purchase and Kafka consumer processing optimization
+- **Search Page**: Event search and filtering functionality  
+- **Login System**: User authentication with JWT
+- **Shopping Cart**: Temporary seat hold with payment verification
+- **Frontend Management**: Ticket selection area and admin interface
 
 ### Architecture Diagram
 
@@ -27,11 +33,18 @@ write model, and MySQL (via Spring Data JPA) stores the read model.
 flowchart LR
   Client -->|POST ticket| PurchaseService
   PurchaseService -->|Redis seat lock| Redis
-  PurchaseService -->|Write| DynamoDB
-  PurchaseService -->|Outbox Event| RabbitMQ
-  RabbitMQ --> PersistenceConsumer
-  PersistenceConsumer -->|Write| MySQL
+  PurchaseService -->|Publish Event| KafkaCluster
+  
+  subgraph KafkaCluster[Kafka Cluster - Event Store]
+    Kafka1[Kafka-1:9092]
+    Kafka2[Kafka-2:9092] 
+    Kafka3[Kafka-3:9092]
+  end
+  
+  KafkaCluster --> MqProjectionService
+  MqProjectionService -->|Project to Read Model| MySQL
   QueryService -->|Query| MySQL
+  Client -->|GET ticket| QueryService
 ```
 
 ## Architecture
@@ -40,16 +53,15 @@ flowchart LR
     - **Purchase Service (Write API)**
       - Spring Boot REST controllers (ticket creation)
       - Service layer (Redis + Lua for atomic seat lock)
-      - Direct writes to **DynamoDB** (write model / source of truth)
-      - **Outbox pattern implemented here:**
-          - Writes ticket events into **OutboxEvent** table (DynamoDB)
-          - `OutboxPublisher` reads unsent events, applies retry & dead-letter logic
-          - Publishes events to **RabbitMQ** (via Spring Cloud Stream / Rabbit binder)
+      - **Event-sourced architecture:**
+          - Publishes `TicketCreatedEvent` via Spring Events (in-memory)
+          - `TicketEventListener` captures events and publishes to **Kafka** (via Spring Cloud Stream)
+          - No direct database persistence - Kafka serves as the event store and source of truth
       
-    - **Persistence Consumer Service (Read Model Projector)**
-      - Spring Boot service consuming ticket events from **RabbitMQ**
-      - Persists events into **MySQL** (read-optimized model)
-      - Uses Outbox + retry + dead-letter handling for reliable, idempotent projection
+    - **MqProjection Service (Read Model Projector)**
+      - Spring Boot service consuming ticket events from **Kafka**
+      - Projects events into **MySQL** (read-optimized model)
+      - Uses retry + dead-letter handling for reliable, idempotent projection
 
     - **Query Service (Read API)**
         - Exposes REST APIs for:
@@ -62,19 +74,38 @@ flowchart LR
     - **Write Path**
         - REST API receives the purchase request
             - → Redis Lua atomically checks and locks a seat
-            - → Writes ticket data to DynamoDB (write model)
-            - → Writes an event to the Outbox table
-            - → Spring Cloud Stream (RabbitMQ binder) publishes Outbox event to RabbitMQ
-    - **Consumers (Projectors)**
-        - RabbitMQ consumer subscribes to ticket events
+            - → Publishes Spring Event (`TicketCreatedEvent`) in-memory
+            - → `TicketEventListener` captures event and sends to Kafka via Spring Cloud Stream
+            - → Kafka stores the event (event sourcing - Kafka is the source of truth)
+    - **Read Path (Event Projection)**
+        - Kafka consumer (`MqProjectionService`) subscribes to ticket events
             - → Projects ticket data into MySQL (read model)
             - → MySQL read model supports queries, counts, and analytics
+            - → `QueryService` exposes REST APIs for querying the read model
 
 ## Run Locally
-- Run Script from root, it should build package, build and run containers on docker. 
-  - `./localDockerInitiate.sh`
-- After Finish:
-  - `docker-compose down`
+
+### Quick Start
+```bash
+# One-click deployment (builds and starts all services)
+./localDockerInitiate.sh
+
+# Optional: specify environment and quiet mode
+./localDockerInitiate.sh --env local --quiet
+
+# Stop all services
+docker compose -f deployment/docker-compose.yml down
+```
+
+### Environment Setup
+- Copy `deployment/.env.template` to create `deployment/.env.personal`
+- Update credentials in `.env.personal` (ignored by git)
+- Kafka cluster ID is auto-generated by build script
+
+### Access Points
+- **Kafka UI**: http://localhost:8088
+- **Purchase Service**: http://localhost:8080
+- **Query Service**: http://localhost:8081
 
 ## REST API
 
@@ -141,10 +172,3 @@ flowchart LR
         }
         ```
 
-## TODO
-- Ticket select Area front end & Front end management service
-- Update RabbitMQ to Kafka, better concurrency and persistent support
-- Shopping Cart & Ticket Hold
-  - Hold space for consumer while making payment
-  - Payment verification
-  - Undo Purchase, undo seat purchase, release seat hold.

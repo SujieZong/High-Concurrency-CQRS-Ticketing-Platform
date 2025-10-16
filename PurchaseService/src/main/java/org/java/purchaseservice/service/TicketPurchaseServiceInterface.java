@@ -1,6 +1,5 @@
 package org.java.purchaseservice.service;
 
-import org.java.purchaseservice.dto.TicketCreationDTO;
 import org.java.purchaseservice.dto.TicketPurchaseRequestDTO;
 import org.java.purchaseservice.dto.TicketRespondDTO;
 
