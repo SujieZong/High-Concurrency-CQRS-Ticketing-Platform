@@ -3,8 +3,7 @@
 A ticket-purchasing backend designed for high contention and throughput.
 It uses CQRS to separate the write path (seat reservation and event emission) from the read path (queries and
 analytics).
-Redis + Lua performs O(1) atomic seat locks, RabbitMQ decouples user requests from persistence, DynamoDB stores the
-write model, and MySQL (via Spring Data JPA) stores the read model.
+Redis + Lua performs O(1) atomic seat locks, Kafka serves as the event store and message broker, and MySQL (via Spring Data JPA) stores the read model projection.
 
 ## Latest Updates
 
@@ -17,8 +16,8 @@ write model, and MySQL (via Spring Data JPA) stores the read model.
     - Better concurrency support and persistent message handling
 - [DONE] Modular deployment system with secure environment management
 - [DONE] One-click local deployment with Docker Compose
-    - Spin up Redis, Kafka, MySQL, DynamoDB Local, and all microservices in one command
-- [DONE] Unified DynamoDB schema with -sharedDb for multi-service testing
+    - Spin up Redis, Kafka, MySQL, and all microservices in one command
+- [DONE] Event-sourced CQRS architecture with Kafka as event store
 
 ## TODO
 
@@ -34,20 +33,18 @@ write model, and MySQL (via Spring Data JPA) stores the read model.
 flowchart LR
   Client -->|POST ticket| PurchaseService
   PurchaseService -->|Redis seat lock| Redis
-  PurchaseService -->|Write| DynamoDB
-  PurchaseService -->|Write Event| OutboxTable[(Outbox Table)]
-  OutboxTable --> OutboxPublisher
-  OutboxPublisher -->|Publish| KafkaCluster
+  PurchaseService -->|Publish Event| KafkaCluster
   
-  subgraph KafkaCluster[Kafka Cluster]
+  subgraph KafkaCluster[Kafka Cluster - Event Store]
     Kafka1[Kafka-1:9092]
     Kafka2[Kafka-2:9092] 
     Kafka3[Kafka-3:9092]
   end
   
-  KafkaCluster --> PersistenceConsumer
-  PersistenceConsumer -->|Write| MySQL
+  KafkaCluster --> MqProjectionService
+  MqProjectionService -->|Project to Read Model| MySQL
   QueryService -->|Query| MySQL
+  Client -->|GET ticket| QueryService
 ```
 
 ## Architecture
@@ -56,16 +53,15 @@ flowchart LR
     - **Purchase Service (Write API)**
       - Spring Boot REST controllers (ticket creation)
       - Service layer (Redis + Lua for atomic seat lock)
-      - Direct writes to **DynamoDB** (write model / source of truth)
-      - **Outbox pattern implemented here:**
-          - Write ticket events into **OutboxEvent** table (DynamoDB)
-          - `OutboxPublisher` reads unsent events, applies retry & dead-letter logic
-          - Publishes events to **RabbitMQ** (via Spring Cloud Stream / Rabbit binder)
+      - **Event-sourced architecture:**
+          - Publishes `TicketCreatedEvent` via Spring Events (in-memory)
+          - `TicketEventListener` captures events and publishes to **Kafka** (via Spring Cloud Stream)
+          - No direct database persistence - Kafka serves as the event store and source of truth
       
-    - **Persistence Consumer Service (Read Model Projector)**
-      - Spring Boot service consuming ticket events from **RabbitMQ**
-      - Persists events into **MySQL** (read-optimized model)
-      - Uses Outbox + retry + dead-letter handling for reliable, idempotent projection
+    - **MqProjection Service (Read Model Projector)**
+      - Spring Boot service consuming ticket events from **Kafka**
+      - Projects events into **MySQL** (read-optimized model)
+      - Uses retry + dead-letter handling for reliable, idempotent projection
 
     - **Query Service (Read API)**
         - Exposes REST APIs for:
@@ -78,13 +74,14 @@ flowchart LR
     - **Write Path**
         - REST API receives the purchase request
             - → Redis Lua atomically checks and locks a seat
-            - → Writes ticket data to DynamoDB (write model)
-            - → Writes an event to the Outbox table
-            - → Spring Cloud Stream (RabbitMQ binder) publishes Outbox event to RabbitMQ
-    - **Consumers (Projectors)**
-        - RabbitMQ consumer subscribes to ticket events
+            - → Publishes Spring Event (`TicketCreatedEvent`) in-memory
+            - → `TicketEventListener` captures event and sends to Kafka via Spring Cloud Stream
+            - → Kafka stores the event (event sourcing - Kafka is the source of truth)
+    - **Read Path (Event Projection)**
+        - Kafka consumer (`MqProjectionService`) subscribes to ticket events
             - → Projects ticket data into MySQL (read model)
             - → MySQL read model supports queries, counts, and analytics
+            - → `QueryService` exposes REST APIs for querying the read model
 
 ## Run Locally
 
