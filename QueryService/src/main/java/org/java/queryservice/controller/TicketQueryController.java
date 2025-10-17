@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/tickets")
@@ -23,6 +24,10 @@ public class TicketQueryController {
 		this.queryService = queryService;
 	}
 
+	@GetMapping("/health")
+	public ResponseEntity<String> healthCheck() {
+		return ResponseEntity.ok("Query Service is healthy! Available endpoints: /tickets/{id}, /tickets, /tickets/count/{eventId}");
+	}
 
 	@GetMapping("/{ticketId}")
 	public ResponseEntity<?> getTicket(@PathVariable("ticketId") String ticketId) {
@@ -34,6 +39,11 @@ public class TicketQueryController {
 		}
 	}
 
+	@GetMapping("/tickets")
+	public ResponseEntity<List<TicketInfoDTO>> getAllSoldTickets() {
+		List<TicketInfoDTO> tickets = queryService.getAllSoldTickets();
+		return ResponseEntity.ok(tickets);
+	}
 
 	@GetMapping("/count/{eventId}")
 	public ResponseEntity<String> countSoldByEvent(@PathVariable("eventId") String eventId) {
@@ -43,8 +53,8 @@ public class TicketQueryController {
 		return ResponseEntity.status(HttpStatus.OK).body(message);
 	}
 
-	@GetMapping("/money/{venueId}/{eventId}")
-	public ResponseEntity<String> moneyByEvent(
+	@GetMapping("/revenue/{venueId}/{eventId}")
+	public ResponseEntity<String> revenueByEvent(
 			@PathVariable("venueId") String venueId,
 			@PathVariable("eventId") String eventId) {
 		BigDecimal revenue = queryService.sumRevenueByVenueAndEvent(venueId, eventId);

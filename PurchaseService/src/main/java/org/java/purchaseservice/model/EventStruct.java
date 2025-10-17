@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Event {
+public class EventStruct {
 	private String eventId; //foreign
 	private String name;
 	private String type;
