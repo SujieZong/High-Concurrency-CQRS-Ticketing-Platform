@@ -129,6 +129,10 @@ services:
     ports:
       - "8080:8080"
 
+    # Mount logs directory to persist logs on host
+    volumes:
+      - ../logs:/app/logs
+
     environment:
       SPRING_PROFILES_ACTIVE: docker
 
@@ -159,6 +163,10 @@ services:
     ports:
       - "8081:8080"
 
+    # Mount logs directory to persist logs on host
+    volumes:
+      - ../logs:/app/logs
+
     environment:
       # MySQL
       SPRING_PROFILES_ACTIVE: docker
@@ -182,7 +190,7 @@ services:
       retries: 10
       start_period: 40s
 
-  # —— MQ Projection Service —— MySQL, Kafka (RabbitMQ deprecated)
+  # —— MQ Projection Service —— MySQL, Kafka
   mq-projection-service:
     networks: [ ticketing-net ]
     build:
@@ -190,6 +198,10 @@ services:
       dockerfile: Dockerfile
     image: mq-projection-service:latest
     container_name: mq-projection-service
+
+    # Mount logs directory to persist logs on host
+    volumes:
+      - ../logs:/app/logs
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
