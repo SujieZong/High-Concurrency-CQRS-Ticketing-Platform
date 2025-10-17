@@ -6,10 +6,7 @@ import org.java.purchaseservice.dto.TicketPurchaseRequestDTO;
 import org.java.purchaseservice.dto.TicketRespondDTO;
 import org.java.purchaseservice.service.TicketPurchaseServiceInterface;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -33,5 +30,10 @@ public class TicketPurchaseController {
 				.buildAndExpand(ticketResponse.getTicketId())
 				.toUri();
 		return ResponseEntity.created(location).body(ticketResponse);
+	}
+
+	@GetMapping("/health")
+	public ResponseEntity<String> healthCheck() {
+		return ResponseEntity.ok("Purchase Service is healthy!");
 	}
 }

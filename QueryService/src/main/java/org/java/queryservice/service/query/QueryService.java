@@ -5,12 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.java.queryservice.dto.TicketInfoDTO;
 import org.java.queryservice.exception.TicketNotFoundException;
 import org.java.queryservice.mapper.TicketMapper;
+import org.java.queryservice.model.TicketInfo;
 import org.java.queryservice.repository.mysql.TicketInfoRepository;
 import org.java.queryservice.service.QueryServiceInterface;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -48,5 +51,17 @@ public class QueryService implements QueryServiceInterface {
 		log.debug("[QueryService][sumRevenueByVenueAndEvent] result={} for venueId={},eventId={}",
 				revenue, venueId, eventId);
 		return revenue == null ? BigDecimal.ZERO : revenue;
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<TicketInfoDTO> getAllSoldTickets() {
+		log.debug("[QueryService][getAllSoldTickets] start");
+		List<TicketInfo> tickets = ticketInfoRepository.findAll();
+		List<TicketInfoDTO> result = tickets.stream()
+				.map(tickerMapper::toInfoDto)
+				.collect(Collectors.toList());
+		log.debug("[QueryService][getAllSoldTickets] found {} tickets", result.size());
+		return result;
 	}
 }
