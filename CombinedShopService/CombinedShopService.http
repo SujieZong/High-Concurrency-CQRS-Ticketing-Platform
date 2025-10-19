@@ -1,0 +1,18 @@
+@CombinedShopService_HostAddress = https://localhost:8088
+
+
+GET {{CombinedShopService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+
+### 获取所有活动
+# GET {{CombinedShopService_HostAddress}}/api/events
+# Accept: application/json
+
+###
+
+### 创建新活动
+# POST {{CombinedShopService_HostAddress}}/api/events
+# Content-Type: application/json
