@@ -182,7 +182,7 @@ services:
       retries: 10
       start_period: 40s
 
-  # —— MQ Projection Service —— MySQL, Kafka (RabbitMQ deprecated)
+  # —— MQ Projection Service —— MySQL, Kafka
   mq-projection-service:
     networks: [ ticketing-net ]
     build:
