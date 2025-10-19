@@ -5,6 +5,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import java.util.HashMap;
+import java.util.Map;
 
 @ControllerAdvice
 public class GeneralExceptionHandler {
@@ -37,6 +40,26 @@ public class GeneralExceptionHandler {
 	public ResponseEntity<String> handleSeatOccupied(SeatOccupiedException ex) {
 		String errorMessage = "Seat Occupied: " + ex.getMessage();
 		return ResponseEntity.status(HttpStatus.CONFLICT).body("Redis Error--" + errorMessage);
+	}
+
+	/**
+	 * Handle 404 Not Found errors - simplified but informative
+	 */
+	@ExceptionHandler(NoHandlerFoundException.class)
+	public ResponseEntity<Map<String, Object>> handleNotFound(NoHandlerFoundException ex) {
+		Map<String, Object> errorResponse = new HashMap<>();
+		errorResponse.put("error", "Endpoint Not Found");
+		errorResponse.put("message", "The requested endpoint does not exist");
+		errorResponse.put("path", ex.getRequestURL());
+		errorResponse.put("availableEndpoints", new String[] {
+				"GET /api/v1/health",
+				"GET /api/v1/tickets/{ticketId}",
+				"GET /api/v1/tickets/tickets",
+				"GET /api/v1/tickets/count/{eventId}",
+				"GET /api/v1/tickets/revenue/{venueId}/{eventId}"
+		});
+
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
 	}
 
 }
