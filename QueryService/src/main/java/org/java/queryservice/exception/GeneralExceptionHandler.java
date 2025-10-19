@@ -30,12 +30,6 @@ public class GeneralExceptionHandler {
 		return ResponseEntity.status(HttpStatus.CONFLICT).body("Redis Error--" + errorMessage);
 	}
 
-	@ExceptionHandler(RowFullException.class)
-	public ResponseEntity<String> handleRowFull(RowFullException ex) {
-		String errorMessage = "Row Full: " + ex.getMessage();
-		return ResponseEntity.status(HttpStatus.CONFLICT).body("Redis Error--" + errorMessage);
-	}
-
 	@ExceptionHandler(SeatOccupiedException.class)
 	public ResponseEntity<String> handleSeatOccupied(SeatOccupiedException ex) {
 		String errorMessage = "Seat Occupied: " + ex.getMessage();

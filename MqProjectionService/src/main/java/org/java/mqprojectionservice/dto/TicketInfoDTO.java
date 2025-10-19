@@ -6,7 +6,7 @@ import org.java.mqprojectionservice.model.TicketStatus;
 
 import java.time.Instant;
 
-// Following the model TicketCreation
+// Mirrors the Kafka payload produced from PurchaseService TicketCreatedEvent
 @Data
 @AllArgsConstructor
 public class TicketInfoDTO {
