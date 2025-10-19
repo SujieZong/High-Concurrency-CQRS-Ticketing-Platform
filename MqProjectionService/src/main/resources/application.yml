@@ -13,7 +13,7 @@ spring:
     function:
       definition: ticket
     stream:
-      defaultBinder: kafka  # Default Binder changes to Kafka from RabbitMQ
+      defaultBinder: kafka
       bindings:
         ticket-in-0:
           destination: ticket.exchange
