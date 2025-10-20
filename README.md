@@ -12,7 +12,7 @@ Redis + Lua performs O(1) atomic seat locks, Kafka serves as the event store and
 - [DONE] Migrated read-side queries from JDBC to Spring Data JPA (MySQL)
     - Reduced boilerplate code and improved transaction handling for complex queries
     - Kept high-performance JDBC for speed critical writes
-- [DONE] Added Kafka to replace RabbitMQ for message streaming
+- [DONE] Migrated to Kafka for message streaming
     - Better concurrency support and persistent message handling
     - Use dead letter queue to catch Kafka publish errors, make sure no message loss
 - [DONE] Modular deployment system with secure environment management
