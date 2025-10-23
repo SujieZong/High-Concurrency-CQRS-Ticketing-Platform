@@ -66,9 +66,16 @@ public class TicketPurchaseService implements TicketPurchaseServiceInterface {
 			entity.setCreatedOn(now);
 
 			// -- Part 4: Publish Spring Event to Kafka (event-sourced architecture)
-			TicketCreatedEvent event = TicketCreatedEvent.builder().ticketId(ticketId).venueId(dto.getVenueId())
-					.eventId(dto.getEventId()).zoneId(dto.getZoneId()).row(dto.getRow()).column(dto.getColumn())
-					.status(creation.getStatus()).createdOn(now).build();
+			TicketCreatedEvent event = TicketCreatedEvent.builder()
+					.ticketId(creation.getTicketId())
+					.venueId(creation.getVenueId())
+					.eventId(creation.getEventId())
+					.zoneId(creation.getZoneId())
+					.row(creation.getRow())
+					.column(creation.getColumn())
+					.status(creation.getStatus())
+					.createdOn(creation.getCreatedOn())
+					.build();
 
 			eventPublisher.publishEvent(event);
 			log.info("[TicketPurchaseService] TicketCreatedEvent published: ticketId={}", ticketId);
