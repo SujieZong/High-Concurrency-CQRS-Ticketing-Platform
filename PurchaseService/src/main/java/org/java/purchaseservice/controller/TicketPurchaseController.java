@@ -1,6 +1,9 @@
 package org.java.purchaseservice.controller;
 
 import jakarta.validation.Valid;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.java.purchaseservice.dto.TicketPurchaseRequestDTO;
 import org.java.purchaseservice.dto.TicketRespondDTO;
@@ -8,10 +11,6 @@ import org.java.purchaseservice.service.TicketPurchaseServiceInterface;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.net.URI;
-import java.util.Map;
-import java.util.HashMap;
 
 // Received HTTP requests
 @RestController

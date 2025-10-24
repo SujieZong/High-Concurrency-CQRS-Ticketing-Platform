@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1")
 public class TicketPurchaseHealthController {
-	@GetMapping("/health")
-	public ResponseEntity<String> health() {
-		return ResponseEntity.ok("Purchase Service is healthy!");
-	}
+  @GetMapping("/health")
+  public ResponseEntity<String> health() {
+    return ResponseEntity.ok("Purchase Service is healthy!");
+  }
 }

@@ -1,7 +1,7 @@
 package org.java.purchaseservice.mapper;
 
-import org.java.purchaseservice.dto.TicketRespondDTO;
 import org.java.purchaseservice.dto.TicketCreationDTO;
+import org.java.purchaseservice.dto.TicketRespondDTO;
 import org.java.purchaseservice.model.TicketInfo;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

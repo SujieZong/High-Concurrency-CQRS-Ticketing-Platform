@@ -4,6 +4,6 @@ import org.java.purchaseservice.dto.TicketPurchaseRequestDTO;
 import org.java.purchaseservice.dto.TicketRespondDTO;
 
 public interface TicketPurchaseServiceInterface {
-	// transfer input data into a Response DTO object and save to Database through DAO and Mapper
-	TicketRespondDTO purchaseTicket(TicketPurchaseRequestDTO dto);
+  // transfer input data into a Response DTO object and save to Database through DAO and Mapper
+  TicketRespondDTO purchaseTicket(TicketPurchaseRequestDTO dto);
 }

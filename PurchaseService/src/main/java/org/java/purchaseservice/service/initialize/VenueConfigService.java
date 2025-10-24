@@ -12,9 +12,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-/**
- * Initializes venue configurations in Redis during startup.
- */
+/** Initializes venue configurations in Redis during startup. */
 @Slf4j
 @Service
 @Order(1)
@@ -29,8 +27,8 @@ public class VenueConfigService implements InitializingBean {
   }
 
   /**
-   * Initializes all venues from configuration into Redis.
-   * Called automatically after bean properties set.
+   * Initializes all venues from configuration into Redis. Called automatically after bean
+   * properties set.
    */
   @Override
   public void afterPropertiesSet() {
@@ -102,9 +100,8 @@ public class VenueConfigService implements InitializingBean {
   }
 
   /**
-   * Initializes backward compatibility venue using default config.
-   * Flow: Business Venue1 → Overridden by Technical Standard →
-   * Final Venue1 Result: Venue1 = 100 zones × 26 rows × 30 cols
+   * Initializes backward compatibility venue using default config. Flow: Business Venue1 →
+   * Overridden by Technical Standard → Final Venue1 Result: Venue1 = 100 zones × 26 rows × 30 cols
    * = 78,000 seats (standardized)
    */
   private void initializeBackwardCompatibilityVenue() {

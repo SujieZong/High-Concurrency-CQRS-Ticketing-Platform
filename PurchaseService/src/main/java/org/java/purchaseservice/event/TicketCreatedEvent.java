@@ -1,10 +1,9 @@
 package org.java.purchaseservice.event;
 
+import java.time.Instant;
 import lombok.Builder;
 import lombok.Data;
 import org.java.purchaseservice.model.TicketStatus;
-
-import java.time.Instant;
 
 @Data
 @Builder

@@ -1,11 +1,11 @@
 package org.java.purchaseservice.exception;
 
 public class CreateTicketException extends RuntimeException {
-	public CreateTicketException(String message) {
-		super(message);
-	}
+  public CreateTicketException(String message) {
+    super(message);
+  }
 
-	public CreateTicketException(String message, Throwable cause) {
-		super(message, cause);
-	}
+  public CreateTicketException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

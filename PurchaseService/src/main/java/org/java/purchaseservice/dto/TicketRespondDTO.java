@@ -9,9 +9,9 @@ import java.time.Instant;
 @Setter
 @AllArgsConstructor
 public class TicketRespondDTO {
-	private String ticketId;
-	private int zoneId;
-	private String row;
-	private String column;
-	private Instant createdOn;
+  private String ticketId;
+  private int zoneId;
+  private String row;
+  private String column;
+  private Instant createdOn;
 }

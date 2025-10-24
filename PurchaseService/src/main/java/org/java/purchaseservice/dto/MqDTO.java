@@ -1,9 +1,8 @@
 package org.java.purchaseservice.dto;
 
+import java.time.Instant;
 import lombok.*;
 import org.java.purchaseservice.model.TicketStatus;
-
-import java.time.Instant;
 
 @Getter
 @Setter
