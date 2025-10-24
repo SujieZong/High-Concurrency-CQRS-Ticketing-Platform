@@ -19,7 +19,8 @@ import static org.mockito.Mockito.*;
 
 /**
  * Test for EventConfigService initialization process.
- * Verifies that event configurations are properly processed and events are initialized.
+ * Verifies that event configurations are properly processed and events are
+ * initialized.
  */
 @ExtendWith(MockitoExtension.class)
 class EventConfigServiceTest {
@@ -53,7 +54,7 @@ class EventConfigServiceTest {
         when(eventConfig.getList()).thenReturn(events);
 
         // When: Run event initialization
-        eventConfigService.run(applicationArguments);
+        eventConfigService.initializeEvents();
 
         // Then: Only enabled events should be initialized
         verify(seatOccupiedService).initializeAllZonesForEvent("EVENT001", "Venue1");
@@ -70,7 +71,7 @@ class EventConfigServiceTest {
         when(eventConfig.isAutoInitialize()).thenReturn(false);
 
         // When: Run event initialization
-        eventConfigService.run(applicationArguments);
+        eventConfigService.initializeEvents();
 
         // Then: No events should be initialized
         verify(seatOccupiedService, never()).initializeAllZonesForEvent(anyString(), anyString());
@@ -84,7 +85,7 @@ class EventConfigServiceTest {
         when(eventConfig.getList()).thenReturn(Collections.emptyList());
 
         // When: Run event initialization
-        assertDoesNotThrow(() -> eventConfigService.run(applicationArguments));
+        assertDoesNotThrow(() -> eventConfigService.initializeEvents());
 
         // Then: No initialization calls should be made
         verify(seatOccupiedService, never()).initializeAllZonesForEvent(anyString(), anyString());
@@ -97,7 +98,7 @@ class EventConfigServiceTest {
         when(eventConfig.getList()).thenReturn(null);
 
         // When: Run event initialization
-        assertDoesNotThrow(() -> eventConfigService.run(applicationArguments));
+        assertDoesNotThrow(() -> eventConfigService.initializeEvents());
 
         // Then: No initialization calls should be made
         verify(seatOccupiedService, never()).initializeAllZonesForEvent(anyString(), anyString());
@@ -122,7 +123,7 @@ class EventConfigServiceTest {
         doNothing().when(seatOccupiedService).initializeAllZonesForEvent("EVENT003", "Venue3");
 
         // When: Run event initialization (should not throw exception)
-        assertDoesNotThrow(() -> eventConfigService.run(applicationArguments));
+        assertDoesNotThrow(() -> eventConfigService.initializeEvents());
 
         // Then: All events should be attempted, including the failing one
         verify(seatOccupiedService).initializeAllZonesForEvent("EVENT001", "Venue1");
@@ -138,19 +139,20 @@ class EventConfigServiceTest {
         // Given: Mix of enabled and disabled events
         when(eventConfig.isAutoInitialize()).thenReturn(true);
 
-        EventConfig.Event event1 = createEvent("EVENT001", "Concert A", "Venue1", true);   // enabled
-        EventConfig.Event event2 = createEvent("EVENT002", "Concert B", "Venue2", false);  // disabled
-        EventConfig.Event event3 = createEvent("EVENT003", "Concert C", "Venue1", true);   // enabled
-        EventConfig.Event event4 = createEvent("EVENT004", "Concert D", "Venue3", false);  // disabled
-        EventConfig.Event event5 = createEvent("EVENT005", "Concert E", "Venue2", true);   // enabled
+        EventConfig.Event event1 = createEvent("EVENT001", "Concert A", "Venue1", true); // enabled
+        EventConfig.Event event2 = createEvent("EVENT002", "Concert B", "Venue2", false); // disabled
+        EventConfig.Event event3 = createEvent("EVENT003", "Concert C", "Venue1", true); // enabled
+        EventConfig.Event event4 = createEvent("EVENT004", "Concert D", "Venue3", false); // disabled
+        EventConfig.Event event5 = createEvent("EVENT005", "Concert E", "Venue2", true); // enabled
 
         List<EventConfig.Event> events = Arrays.asList(event1, event2, event3, event4, event5);
         when(eventConfig.getList()).thenReturn(events);
 
         // When: Run event initialization
-        eventConfigService.run(applicationArguments);
+        eventConfigService.initializeEvents();
 
-        // Then: Only enabled events (EVENT001, EVENT003, EVENT005) should be initialized
+        // Then: Only enabled events (EVENT001, EVENT003, EVENT005) should be
+        // initialized
         verify(seatOccupiedService).initializeAllZonesForEvent("EVENT001", "Venue1");
         verify(seatOccupiedService).initializeAllZonesForEvent("EVENT003", "Venue1");
         verify(seatOccupiedService).initializeAllZonesForEvent("EVENT005", "Venue2");
@@ -176,7 +178,7 @@ class EventConfigServiceTest {
         when(eventConfig.getList()).thenReturn(events);
 
         // When: Run event initialization
-        eventConfigService.run(applicationArguments);
+        eventConfigService.initializeEvents();
 
         // Then: No events should be initialized since all are disabled
         verify(seatOccupiedService, never()).initializeAllZonesForEvent(anyString(), anyString());
@@ -188,22 +190,21 @@ class EventConfigServiceTest {
         when(eventConfig.isAutoInitialize()).thenReturn(true);
 
         List<EventConfig.Event> manyEvents = Arrays.asList(
-            createEvent("EVENT001", "Concert 1", "Venue1", true),
-            createEvent("EVENT002", "Concert 2", "Venue1", true),
-            createEvent("EVENT003", "Concert 3", "Venue2", true),
-            createEvent("EVENT004", "Concert 4", "Venue2", true),
-            createEvent("EVENT005", "Concert 5", "Venue3", true),
-            createEvent("EVENT006", "Concert 6", "Venue3", true),
-            createEvent("EVENT007", "Concert 7", "Venue1", true),
-            createEvent("EVENT008", "Concert 8", "Venue2", true),
-            createEvent("EVENT009", "Concert 9", "Venue3", true),
-            createEvent("EVENT010", "Concert 10", "Venue1", true)
-        );
+                createEvent("EVENT001", "Concert 1", "Venue1", true),
+                createEvent("EVENT002", "Concert 2", "Venue1", true),
+                createEvent("EVENT003", "Concert 3", "Venue2", true),
+                createEvent("EVENT004", "Concert 4", "Venue2", true),
+                createEvent("EVENT005", "Concert 5", "Venue3", true),
+                createEvent("EVENT006", "Concert 6", "Venue3", true),
+                createEvent("EVENT007", "Concert 7", "Venue1", true),
+                createEvent("EVENT008", "Concert 8", "Venue2", true),
+                createEvent("EVENT009", "Concert 9", "Venue3", true),
+                createEvent("EVENT010", "Concert 10", "Venue1", true));
 
         when(eventConfig.getList()).thenReturn(manyEvents);
 
         // When: Run event initialization
-        eventConfigService.run(applicationArguments);
+        eventConfigService.initializeEvents();
 
         // Then: All 10 events should be initialized
         verify(seatOccupiedService, times(10)).initializeAllZonesForEvent(anyString(), anyString());

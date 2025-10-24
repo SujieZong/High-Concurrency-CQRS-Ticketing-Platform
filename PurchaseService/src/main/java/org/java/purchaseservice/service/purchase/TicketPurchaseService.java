@@ -2,8 +2,10 @@ package org.java.purchaseservice.service.purchase;
 
 import java.time.Instant;
 import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.java.purchaseservice.dto.TicketCreationDTO;
 import org.java.purchaseservice.dto.TicketPurchaseRequestDTO;
 import org.java.purchaseservice.dto.TicketRespondDTO;
@@ -20,141 +22,123 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Service: Generate ticketId/timestamp → Redis seat lock → Publish event to Kafka (event-sourced
- * CQRS).
+ * Service for ticket purchase: Redis seat lock → Generate ticket → Publish
+ * event to Kafka.
  */
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class TicketPurchaseService implements TicketPurchaseServiceInterface {
 
-  private final TicketMapper ticketMapper;
-  private final SeatOccupiedRedisFacade seatOccupiedRedisFacade;
-  private final ApplicationEventPublisher eventPublisher;
+	private final TicketMapper ticketMapper;
+	private final SeatOccupiedRedisFacade seatOccupiedRedisFacade;
+	private final ApplicationEventPublisher eventPublisher;
 
-  // Persistent through Kafka by spring event
-  @Override
-  @Transactional
-  public TicketRespondDTO purchaseTicket(TicketPurchaseRequestDTO dto) {
-    log.info(
-        "[TicketPurchaseService] purchaseTicket start: eventId={}, zone={}, row={}, col={}",
-        dto.getEventId(),
-        dto.getZoneId(),
-        dto.getRow(),
-        dto.getColumn());
+	@Override
+	@Transactional
+	public TicketRespondDTO purchaseTicket(final TicketPurchaseRequestDTO dto) {
+		log.info(
+				"[TicketPurchaseService] Starting purchase: eventId={}, seat={}-{}-{}",
+				dto.getEventId(),
+				dto.getZoneId(),
+				dto.getRow(),
+				dto.getColumn());
 
-    // Part 1: Redis - Set Redis seat occupancy to a True - Lua script
-    validateAndOccupySeat(dto);
+		// Reserve seat in Redis
+		validateAndOccupySeat(dto);
 
-    // -- Part 2 Generation UUID and time--
-    String ticketId = generateTicketId();
-    Instant now = generateTimestamp();
+		final String ticketId = UUID.randomUUID().toString();
+		final Instant now = Instant.now();
 
-    try {
-      // -- Part 3: Construct ticket data model (not persisted in write service)
-      TicketCreationDTO creation = createTicketCreationData(dto, ticketId, now);
-      // Build entity for event publishing (CQRS: event is the source of truth)
-      TicketInfo entity = buildTicketEntity(creation, ticketId, now);
+		try {
+			// Create ticket data
+			final TicketCreationDTO creation = buildTicketCreationData(dto, ticketId, now);
 
-      // -- Part 4: Publish Spring Event to Kafka (event-sourced architecture)
-      publishTicketCreatedEvent(creation);
-      // direct return
-      return ticketMapper.toRespondDto(entity);
+			// Build entity for response (CQRS: write model)
+			final TicketInfo entity = buildTicketEntity(creation);
 
-    } catch (Exception ex) {
-      // any error, release seat
-      safeReleaseSeat(dto, ticketId, ex);
-      throw new CreateTicketException("Failed to create ticket", ex);
-    }
-  }
+			// Publish event to Kafka (CQRS: event sourcing)
+			publishTicketCreatedEvent(creation);
 
-  /** Validates the seat availability and occupies it atomically using Redis Lua script. */
-  private void validateAndOccupySeat(TicketPurchaseRequestDTO dto) {
-    try {
-      seatOccupiedRedisFacade.tryOccupySeat(
-          dto.getEventId(), dto.getVenueId(), dto.getZoneId(), dto.getRow(), dto.getColumn());
-      log.debug(
-          "[TicketPurchaseService] seat occupied OK for eventId={}, seat={}-{}",
-          dto.getEventId(),
-          dto.getRow(),
-          dto.getColumn());
-    } catch (SeatOccupiedException e) {
-      log.warn(
-          "[TicketPurchaseService] seat already occupied: eventId={}, seat={}-{}",
-          dto.getEventId(),
-          dto.getRow(),
-          dto.getColumn());
-      throw e;
-    }
-  }
+			// Return response (CQRS: read model will be updated asynchronously)
+			return ticketMapper.toRespondDto(entity);
 
-  /** Generates a unique ticket identifier using UUID. */
-  private String generateTicketId() {
-    return UUID.randomUUID().toString();
-  }
+		} catch (Exception ex) {
+			safeReleaseSeat(dto, ticketId, ex);
+			throw new CreateTicketException("Failed to create ticket", ex);
+		}
+	}
 
-  /** Generates the current timestamp for ticket creation. */
-  private Instant generateTimestamp() {
-    return Instant.now();
-  }
+	private void validateAndOccupySeat(final TicketPurchaseRequestDTO dto) {
+		try {
+			seatOccupiedRedisFacade.tryOccupySeat(
+					dto.getEventId(), dto.getVenueId(), dto.getZoneId(), dto.getRow(), dto.getColumn());
+			log.debug(
+					"[TicketPurchaseService] Seat occupied: eventId={}, seat={}-{}",
+					dto.getEventId(),
+					dto.getRow(),
+					dto.getColumn());
+		} catch (SeatOccupiedException e) {
+			log.warn(
+					"[TicketPurchaseService] Seat already occupied: eventId={}, seat={}-{}",
+					dto.getEventId(),
+					dto.getRow(),
+					dto.getColumn());
+			throw e;
+		}
+	}
 
-  /** Creates the ticket creation data transfer object with all necessary information. */
-  private TicketCreationDTO createTicketCreationData(
-      TicketPurchaseRequestDTO dto, String ticketId, Instant now) {
-    return TicketCreationDTO.builder()
-        .ticketId(ticketId)
-        .venueId(dto.getVenueId())
-        .eventId(dto.getEventId())
-        .zoneId(dto.getZoneId())
-        .row(dto.getRow())
-        .column(dto.getColumn())
-        .status(TicketStatus.PAID)
-        .createdOn(now)
-        .build();
-  }
+	private TicketCreationDTO buildTicketCreationData(
+			final TicketPurchaseRequestDTO dto, final String ticketId, final Instant now) {
+		return TicketCreationDTO.builder()
+				.ticketId(ticketId)
+				.venueId(dto.getVenueId())
+				.eventId(dto.getEventId())
+				.zoneId(dto.getZoneId())
+				.row(dto.getRow())
+				.column(dto.getColumn())
+				.status(TicketStatus.PAID)
+				.createdOn(now)
+				.build();
+	}
 
-  /** Builds the ticket entity from creation data for response mapping. */
-  private TicketInfo buildTicketEntity(TicketCreationDTO creation, String ticketId, Instant now) {
-    TicketInfo entity = ticketMapper.toEntity(creation);
-    entity.setTicketId(ticketId);
-    entity.setStatus(creation.getStatus());
-    entity.setCreatedOn(now);
-    return entity;
-  }
+	private TicketInfo buildTicketEntity(final TicketCreationDTO creation) {
+		final TicketInfo entity = ticketMapper.toEntity(creation);
+		entity.setTicketId(creation.getTicketId());
+		entity.setStatus(creation.getStatus());
+		entity.setCreatedOn(creation.getCreatedOn());
+		return entity;
+	}
 
-  /** Builds and publishes the ticket created event to Kafka. */
-  private void publishTicketCreatedEvent(TicketCreationDTO creation) {
-    TicketCreatedEvent event =
-        TicketCreatedEvent.builder()
-            .ticketId(creation.getTicketId())
-            .venueId(creation.getVenueId())
-            .eventId(creation.getEventId())
-            .zoneId(creation.getZoneId())
-            .row(creation.getRow())
-            .column(creation.getColumn())
-            .status(creation.getStatus())
-            .createdOn(creation.getCreatedOn())
-            .build();
+	private void publishTicketCreatedEvent(final TicketCreationDTO creation) {
+		final TicketCreatedEvent event = TicketCreatedEvent.builder()
+				.ticketId(creation.getTicketId())
+				.venueId(creation.getVenueId())
+				.eventId(creation.getEventId())
+				.zoneId(creation.getZoneId())
+				.row(creation.getRow())
+				.column(creation.getColumn())
+				.status(creation.getStatus())
+				.createdOn(creation.getCreatedOn())
+				.build();
 
-    eventPublisher.publishEvent(event);
-    log.info(
-        "[TicketPurchaseService] TicketCreatedEvent published: ticketId={}",
-        creation.getTicketId());
-  }
+		eventPublisher.publishEvent(event);
+		log.info("[TicketPurchaseService] Event published: ticketId={}", creation.getTicketId());
+	}
 
-  // Release seat from Redis
-  private void safeReleaseSeat(TicketPurchaseRequestDTO dto, String ticketId, Exception original) {
-    try {
-      seatOccupiedRedisFacade.releaseSeat(
-          dto.getEventId(), dto.getVenueId(), dto.getZoneId(), dto.getRow(), dto.getColumn());
-      log.info("[TicketPurchaseService] seat released after failure, ticketId={}", ticketId);
-    } catch (Exception re) {
-      log.error(
-          "[TicketPurchaseService] seat release FAILED, ticketId={}, cause={}, releaseErr={}",
-          ticketId,
-          original.getMessage(),
-          re.getMessage(),
-          re);
-    }
-  }
+	private void safeReleaseSeat(
+			final TicketPurchaseRequestDTO dto, final String ticketId, final Exception original) {
+		try {
+			seatOccupiedRedisFacade.releaseSeat(
+					dto.getEventId(), dto.getVenueId(), dto.getZoneId(), dto.getRow(), dto.getColumn());
+			log.info("[TicketPurchaseService] Seat released after failure: ticketId={}", ticketId);
+		} catch (Exception re) {
+			log.error(
+					"[TicketPurchaseService] Seat release failed: ticketId={}, original={}, releaseError={}",
+					ticketId,
+					original.getMessage(),
+					re.getMessage(),
+					re);
+		}
+	}
 }

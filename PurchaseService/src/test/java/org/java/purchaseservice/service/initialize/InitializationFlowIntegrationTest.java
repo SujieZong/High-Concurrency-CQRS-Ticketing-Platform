@@ -50,8 +50,8 @@ class InitializationFlowIntegrationTest {
     @BeforeEach
     void setUp() {
         // Mock Redis operations
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(redisTemplate.opsForSet()).thenReturn(setOperations);
+        lenient().when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        lenient().when(redisTemplate.opsForSet()).thenReturn(setOperations);
 
         // Initialize services
         venueConfigService = new VenueConfigService(redisTemplate, venueConfig);
@@ -66,10 +66,10 @@ class InitializationFlowIntegrationTest {
 
         // When: Execute initialization flow in order
         // Step 1: Initialize venues (@Order(1))
-        venueConfigService.afterPropertiesSet();
+        venueConfigService.initializeVenues();
 
         // Step 2: Initialize events (@Order(2))
-        eventConfigService.run(applicationArguments);
+        eventConfigService.initializeEvents();
 
         // Then: Verify execution order and interactions
         InOrder inOrder = inOrder(redisTemplate, seatOccupiedService);
@@ -90,8 +90,8 @@ class InitializationFlowIntegrationTest {
         setupEventConfiguration();
 
         // When: Execute initialization flow
-        assertDoesNotThrow(() -> venueConfigService.afterPropertiesSet());
-        assertDoesNotThrow(() -> eventConfigService.run(applicationArguments));
+        assertDoesNotThrow(() -> venueConfigService.initializeVenues());
+        assertDoesNotThrow(() -> eventConfigService.initializeEvents());
 
         // Then: Event initialization should still proceed
         verify(seatOccupiedService).initializeAllZonesForEvent("EVENT001", "Venue1");
@@ -106,8 +106,8 @@ class InitializationFlowIntegrationTest {
         when(eventConfig.getList()).thenThrow(new RuntimeException("Event config error"));
 
         // When: Execute initialization flow
-        assertDoesNotThrow(() -> venueConfigService.afterPropertiesSet());
-        assertDoesNotThrow(() -> eventConfigService.run(applicationArguments));
+        assertDoesNotThrow(() -> venueConfigService.initializeVenues());
+        assertDoesNotThrow(() -> eventConfigService.initializeEvents());
 
         // Then: Venue initialization should complete successfully
         verify(redisTemplate, atLeastOnce()).opsForValue();
@@ -136,7 +136,7 @@ class InitializationFlowIntegrationTest {
         when(defaultZones.getColCount()).thenReturn(30);
 
         // When: Initialize venues
-        venueConfigService.afterPropertiesSet();
+        venueConfigService.initializeVenues();
 
         // Then: Venue1 should be initialized twice (custom + default override)
         verify(valueOperations, times(50)).set(contains("Venue1:zone:"), eq(1200));
@@ -149,8 +149,8 @@ class InitializationFlowIntegrationTest {
         setupComplexConfiguration();
 
         // When: Execute complete initialization flow
-        venueConfigService.afterPropertiesSet();
-        eventConfigService.run(applicationArguments);
+        venueConfigService.initializeVenues();
+        eventConfigService.initializeEvents();
 
         // Then: Verify all venues and events are initialized
         verify(valueOperations, atLeast(180)).set(anyString(), anyInt());
@@ -170,8 +170,8 @@ class InitializationFlowIntegrationTest {
         when(eventConfig.isAutoInitialize()).thenReturn(false);
 
         // When: Execute initialization flow
-        venueConfigService.afterPropertiesSet();
-        eventConfigService.run(applicationArguments);
+        venueConfigService.initializeVenues();
+        eventConfigService.initializeEvents();
 
         // Then: Only venue initialization should occur
         verify(redisTemplate, atLeastOnce()).opsForValue();
@@ -255,11 +255,11 @@ class InitializationFlowIntegrationTest {
         when(eventConfig.isAutoInitialize()).thenReturn(true);
 
         List<EventConfig.Event> events = List.of(
-            createEvent("EVENT001", "Concert A", "Venue1", true),   // enabled
-            createEvent("EVENT002", "Concert B", "Venue1", false),  // disabled
-            createEvent("EVENT003", "Concert C", "Venue3", true),   // enabled
-            createEvent("EVENT004", "Concert D", "Venue2", false),  // disabled
-            createEvent("EVENT005", "Concert E", "Venue2", true)    // enabled
+                createEvent("EVENT001", "Concert A", "Venue1", true), // enabled
+                createEvent("EVENT002", "Concert B", "Venue1", false), // disabled
+                createEvent("EVENT003", "Concert C", "Venue3", true), // enabled
+                createEvent("EVENT004", "Concert D", "Venue2", false), // disabled
+                createEvent("EVENT005", "Concert E", "Venue2", true) // enabled
         );
 
         when(eventConfig.getList()).thenReturn(events);
