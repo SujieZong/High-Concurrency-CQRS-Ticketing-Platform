@@ -10,9 +10,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-/**
- * Initializes venue configurations in Redis during startup.
- */
+/** Initializes venue configurations in Redis during startup. */
 @Slf4j
 @Service
 public class VenueConfigService {
@@ -26,8 +24,8 @@ public class VenueConfigService {
   }
 
   /**
-   * Initializes all venues from configuration into Redis.
-   * Called by CombinedInitializer during application startup.
+   * Initializes all venues from configuration into Redis. Called by CombinedInitializer during
+   * application startup.
    */
   public void initializeVenues() {
     try {
@@ -107,9 +105,8 @@ public class VenueConfigService {
   }
 
   /**
-   * Initialize backward compatibility venue using default config.
-   * Flow: Business Venue1 → Overridden by Technical Standard →
-   * Final Venue1 Result: Venue1 = 100 zones × 26 rows × 30 cols
+   * Initialize backward compatibility venue using default config. Flow: Business Venue1 →
+   * Overridden by Technical Standard → Final Venue1 Result: Venue1 = 100 zones × 26 rows × 30 cols
    * = 78,000 seats (standardized)
    */
   private void initializeBackwardCompatibilityVenue() {
@@ -167,7 +164,7 @@ public class VenueConfigService {
    * Gets the row count for the specified venue zone.
    *
    * @param venueId the venue identifier
-   * @param zoneId  the zone identifier
+   * @param zoneId the zone identifier
    * @return the number of rows in the zone
    */
   public int getRowCount(String venueId, int zoneId) {
@@ -179,7 +176,7 @@ public class VenueConfigService {
    * Gets the number of seats per row for the specified venue zone.
    *
    * @param venueId the venue identifier
-   * @param zoneId  the zone identifier
+   * @param zoneId the zone identifier
    * @return the number of seats per row in the zone
    */
   public int getSeatPerRow(String venueId, int zoneId) {
@@ -188,11 +185,10 @@ public class VenueConfigService {
   }
 
   /**
-   * Returns the configured capacity (total number of seats) for the given venue
-   * zone.
+   * Returns the configured capacity (total number of seats) for the given venue zone.
    *
    * @param venueId the venue identifier
-   * @param zoneId  the zone identifier
+   * @param zoneId the zone identifier
    * @return the total capacity of the zone
    */
   public int getZoneCapacity(String venueId, int zoneId) {

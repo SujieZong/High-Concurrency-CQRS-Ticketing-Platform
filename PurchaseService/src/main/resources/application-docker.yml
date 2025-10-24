@@ -4,15 +4,6 @@ spring:
   config:
     activate:
       on-profile: docker
-#
-#  # MySQL 不在 Docker，而是在宿主机：保持 host.docker.internal
-#  # 如果后续把 MySQL 也放进 compose，请改成 jdbc:mysql://mysql:3306/ticket_platform?serverTimezone=UTC
-#  datasource:
-#    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://host.docker.internal:3306/ticket_platform?serverTimezone=UTC}
-#    username: ${SPRING_DATASOURCE_USERNAME:root}
-#    password: ${SPRING_DATASOURCE_PASSWORD:Qweasd123}
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-#    hikari:
-#      minimum-idle: 5
-#      maximum-pool-size: 20
-#      connection-timeout: 30000
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://mysql:3306/ticket_platform?serverTimezone=UTC}

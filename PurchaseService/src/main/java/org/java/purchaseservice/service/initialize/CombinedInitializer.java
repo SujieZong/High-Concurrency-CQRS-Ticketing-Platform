@@ -10,8 +10,7 @@ import org.springframework.stereotype.Component;
 /**
  * Orchestrates startup initialization: - Venue first - Event second
  *
- * <p>
- * Keeps business logic inside VenueConfigService / EventConfigService.
+ * <p>Keeps business logic inside VenueConfigService / EventConfigService.
  */
 @Slf4j
 @Component

@@ -8,10 +8,7 @@ import org.java.purchaseservice.service.redis.SeatOccupiedService;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-/**
- * Initializes event configurations during application startup. Runs after
- * VenueConfigService
- */
+/** Initializes event configurations during application startup. Runs after VenueConfigService */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -20,10 +17,7 @@ public class EventConfigService {
   private final SeatOccupiedService seatService;
   private final EventConfig eventConfig;
 
-  /**
-   * Initializes events based on configuration. Skips if auto-initialize is
-   * disabled.
-   */
+  /** Initializes events based on configuration. Skips if auto-initialize is disabled. */
   public void initializeEvents() {
     try {
       // If auto initialize false, skip everything
