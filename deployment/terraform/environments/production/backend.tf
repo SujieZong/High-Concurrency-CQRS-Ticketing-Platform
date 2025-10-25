@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket         = "ticketing-terraform-state"
+    bucket         = "ticketing-terraform-state-zsj"
     key            = "production/terraform.tfstate"
     region         = "us-west-2"
     encrypt        = true
