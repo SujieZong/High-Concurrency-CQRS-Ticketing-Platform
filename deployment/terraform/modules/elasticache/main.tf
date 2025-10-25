@@ -28,14 +28,14 @@ resource "aws_security_group" "redis" {
 }
 
 resource "aws_elasticache_replication_group" "main" {
-  replication_group_id       = "${var.environment}-ticketing-redis"
-  replication_group_description = "Redis cluster for ticketing platform"
+  replication_group_id = "${var.environment}-ticketing-redis"
+  description          = "Redis cluster for ticketing platform"
   
-  engine               = "redis"
-  engine_version       = var.redis_version
-  node_type           = var.redis_node_type
-  number_cache_clusters = var.redis_num_cache_nodes
-  port                = 6379
+  engine         = "redis"
+  engine_version = var.redis_version
+  node_type      = var.redis_node_type
+  num_cache_clusters = var.redis_num_cache_nodes
+  port           = 6379
   
   parameter_group_name = aws_elasticache_parameter_group.main.name
   subnet_group_name    = aws_elasticache_subnet_group.main.name

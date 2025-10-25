@@ -1,0 +1,12 @@
+aws_region           = "us-west-2"
+service_name         = "CS6650L2-Fixed"
+ecs_count            = 2
+enable_alb           = true
+enable_autoscaling   = true   # Enable to show full resilience with scaling
+cpu                  = 1024   # Higher capacity for resilience
+memory               = 2048   # Higher capacity for resilience
+min_capacity         = 2
+max_capacity         = 6
+target_cpu_utilization = 70.0
+scale_out_cooldown   = 30
+scale_in_cooldown    = 60
